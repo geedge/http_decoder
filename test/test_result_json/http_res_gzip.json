@@ -1,0 +1,44 @@
+[
+    {
+        "__X_HTTP_TUPLE4": "192.168.69.2.34059>192.168.69.1.80",
+        "__X_HTTP_RESULT_INDEX": "0"
+    },
+    {
+        "__X_HTTP_TRANSACTION": "request",
+        "method": "GET",
+        "uri": "/test/ethereal.html",
+        "req_version": "1.1",
+        "major_version": 1,
+        "minor_version": 1,
+        "Host": "cerberus",
+        "User-Agent": "Mozilla/5.0 (X11; U; Linux ppc; rv:1.7.3) Gecko/20041004 Firefox/0.10.1",
+        "Accept": "text/xml,application/xml,application/xhtml+xml,text/html;q=0.9,text/plain;q=0.8,image/png,*/*;q=0.5",
+        "Accept-Language": "en-us,en;q=0.5",
+        "Accept-Encoding": "gzip,deflate",
+        "Accept-Charset": "ISO-8859-1,utf-8;q=0.7,*;q=0.7",
+        "Keep-Alive": "300",
+        "Connection": "keep-alive",
+        "Cookie": "FGNCLIID=05c04axp1yaqynldtcdiwis0ag1",
+        "__X_HTTP_URL": "cerberus/test/ethereal.html",
+        "__X_HTTP_RESULT_INDEX": "1"
+    },
+    {
+        "__X_HTTP_TRANSACTION": "response",
+        "res_version": "1.1",
+        "res_status": "OK",
+        "major_version": 1,
+        "minor_version": 1,
+        "status_code": 200,
+        "Date": "Fri, 29 Oct 2004 05:21:00 GMT",
+        "Server": "Apache/2.0.50 (Fedora)",
+        "Last-Modified": "Fri, 29 Oct 2004 05:20:21 GMT",
+        "ETag": "\"126e1f-6d-371b2f40\"",
+        "Accept-Ranges": "bytes",
+        "Vary": "Accept-Encoding",
+        "Content-Encoding": "gzip",
+        "Content-Length": "92",
+        "Connection": "close",
+        "Content-Type": "text/html; charset=UTF-8",
+        "__X_HTTP_RESULT_INDEX": "2"
+    }
+]

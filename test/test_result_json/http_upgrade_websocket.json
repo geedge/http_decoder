@@ -1,0 +1,42 @@
+[
+    {
+        "__X_HTTP_TUPLE4": "131.179.196.220.59631>131.179.196.46.9696",
+        "__X_HTTP_RESULT_INDEX": "0"
+    },
+    {
+        "__X_HTTP_TRANSACTION": "request",
+        "method": "GET",
+        "uri": "/",
+        "req_version": "1.1",
+        "major_version": 1,
+        "minor_version": 1,
+        "Host": "spurs.cs.ucla.edu:9696",
+        "Connection": "Upgrade",
+        "Pragma": "no-cache",
+        "Cache-Control": "no-cache",
+        "Upgrade": "websocket",
+        "Origin": "null",
+        "Sec-WebSocket-Version": "13",
+        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/43.0.2357.124 Safari/537.36",
+        "Accept-Encoding": "gzip, deflate, sdch",
+        "Accept-Language": "en-US,en;q=0.8,lv;q=0.6,ru;q=0.4",
+        "Cookie": "s_cc=true; s_sq=%5B%5BB%5D%5D; iwe_user_noticecount_urn%3amace%3aucla.edu%3appid%3aperson%3a1223EF7211FC4EC1965579D0B8D85FBA=2; __utma=125574670.1759122974.1407127284.1407127284.1415755402.2; __utmc=125574670; __utma=126236063.2139843507.1390525421.1433785187.1435706244.46; __utmc=126236063; __utmz=126236063.1427934389.33.5.utmcsr=google|utmccn=(organic)|utmcmd=organic|utmctr=(not%20provided); _ucla_sso=2015-07-02T11%3A34%3A30-07%3A00; _ga=GA1.2.1759122974.1407127284",
+        "Sec-WebSocket-Key": "sgD1adxQ3mk6BbBqab7owA==",
+        "Sec-WebSocket-Extensions": "permessage-deflate; client_max_window_bits",
+        "__X_HTTP_URL": "spurs.cs.ucla.edu:9696/",
+        "__X_HTTP_RESULT_INDEX": "1"
+    },
+    {
+        "__X_HTTP_TRANSACTION": "response",
+        "res_version": "1.1",
+        "res_status": "Switching Protocols",
+        "major_version": 1,
+        "minor_version": 1,
+        "status_code": 101,
+        "Connection": "upgrade",
+        "Sec-WebSocket-Accept": "FRh9fmH0UaoLdY5BSFO4hP2Pcjw=",
+        "Server": "WebSocket++/0.5.1",
+        "Upgrade": "websocket",
+        "__X_HTTP_RESULT_INDEX": "2"
+    }
+]

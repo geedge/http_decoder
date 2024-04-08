@@ -1,0 +1,11 @@
+# stellar_plugin.toml
+#
+[[plugin]]
+path = "./stellar_plugin/http_decoder.so"
+init = "http_decoder_init"
+exit = "http_decoder_exit"
+
+[[plugin]]
+path = "./stellar_plugin/http_decoder_test.so"
+init = "http_decoder_test_init"
+exit = "http_decoder_test_exit"

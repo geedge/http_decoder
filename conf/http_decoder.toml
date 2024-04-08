@@ -1,0 +1,15 @@
+[basic]
+# Switch for decompress body, open(1) closed(0), default(0)
+decompress=1
+
+# per session mempool size, default(32Ki)
+mempool_size=32768
+
+# per session http parsed result queue length
+result_queue_len=16
+
+# call fieldstat every stat_interval_pkts
+stat_interval_pkts=1000
+
+# fieldstat output interval
+stat_output_interval=1

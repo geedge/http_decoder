@@ -1,0 +1,42 @@
+[
+	{
+		"__X_HTTP_TUPLE4": "10.9.0.2.58038>139.162.123.134.80",
+		"__X_HTTP_RESULT_INDEX": "0"
+	},
+	{
+		"__X_HTTP_TRANSACTION": "request",
+		"method": "GET",
+		"uri": "/robots.txt",
+		"req_version": "1.1",
+		"major_version": 1,
+		"minor_version": 1,
+		"Host": "nghttp2.org",
+		"User-Agent": "curl/7.61.0",
+		"Accept": "*/*",
+		"Connection": "Upgrade, HTTP2-Settings",
+		"Upgrade": "h2c",
+		"HTTP2-Settings": "AAMAAABkAARAAAAAAAIAAAAA",
+		"__X_HTTP_URL": "nghttp2.org/robots.txt",
+		"__X_HTTP_RESULT_INDEX": "1"
+	},
+	{
+		"__X_HTTP_TRANSACTION": "request",
+		"method": "PRI",
+		"uri": "*",
+		"req_version": "2.0",
+		"major_version": 2,
+		"minor_version": 0,
+		"__X_HTTP_RESULT_INDEX": "2"
+	},
+	{
+		"__X_HTTP_TRANSACTION": "response",
+		"res_version": "1.1",
+		"res_status": "Switching Protocols",
+		"major_version": 1,
+		"minor_version": 1,
+		"status_code": 101,
+		"Connection": "Upgrade",
+		"Upgrade": "h2c",
+		"__X_HTTP_RESULT_INDEX": "3"
+	}
+]

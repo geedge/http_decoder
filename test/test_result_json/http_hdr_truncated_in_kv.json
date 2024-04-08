@@ -1,0 +1,53 @@
+[
+	{
+		"__X_HTTP_TUPLE4": "196.190.248.93.32727>94.130.141.49.80",
+		"__X_HTTP_RESULT_INDEX": "0"
+	},
+	{
+		"__X_HTTP_TRANSACTION": "request",
+		"method": "GET",
+		"uri": "/iframes2/e38f4959d33f4fa390045b0d7123997d.html?subid=65843620",
+		"req_version": "1.1",
+		"major_version": 1,
+		"minor_version": 1,
+		"Host": "tsyndicate.com",
+		"Connection": "keep-alive",
+		"Upgrade-Insecure-Requests": "1",
+		"User-Agent": "Mozilla/5.0 (Linux; Android 11; SM-A217F) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/95.0.4638.74 Mobile Safari/537.36",
+		"Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
+		"Referer": "http://the-sexy-tube.com/",
+		"Accept-Encoding": "gzip, deflate",
+		"Accept-Language": "en-GB,en-US;q=0.9,en;q=0.8",
+		"__X_HTTP_URL": "tsyndicate.com/iframes2/e38f4959d33f4fa390045b0d7123997d.html?subid=65843620",
+		"__X_HTTP_RESULT_INDEX": "1"
+	},
+	{
+		"__X_HTTP_TRANSACTION": "response",
+		"res_version": "1.1",
+		"res_status": "OK",
+		"major_version": 1,
+		"minor_version": 1,
+		"status_code": 200,
+		"Server": "nginx",
+		"Date": "Sat, 13 Nov 2021 13:58:01 GMT",
+		"Content-Type": "text/html; charset=utf-8",
+		"Transfer-Encoding": "chunked",
+		"Connection": "keep-alive",
+		"Vary": "Accept-Encoding",
+		"Cache-Control": "no-cache, no-store, no-transform, must-revalidate",
+		"Pragma": "no-cache",
+		"Expires": "0",
+		"Vary1": "*",
+		"X-Api-Version": "2",
+		"Link": "<http://lcdn.tsyndicate.com/sdk/v1/b.b.js>; rel=preload; as=script",
+		"X-Request-Id": "2ceed9968bf8c648",
+		"Set-Cookie": "ts_uid=6ec96511-9fa6-4e10-86b8-31fdb4531864; expires=Fri, 13 May 2022 13:58:01 GMT; domain=.tsyndicate.com; path=/; HttpOnly; secure; SameSite=None",
+		"Set-Cookie2": "bfq=e0SIEaFjiwwZNWjkkDGjCwsRYwpuifFQRJmJMWzMsIEjBw4ZOCr2URAQ; expires=Sun, 14 Nov 2021 13:58:01 GMT; domain=.tsyndicate.com; path=/; secure; SameSite=None",
+		"X-Robots-Tag": "none",
+		"Cache-Control3": "no-transform",
+		"X-Robots-Tag4": "noindex, nofollow",
+		"Report-To": "{ \"url\": \"https://pxl.tsyndicate.com/api/v1/heavy-ad/report\", \"max_age\": 86401 }",
+		"Content-Encoding": "gzip",
+		"__X_HTTP_RESULT_INDEX": "2"
+	}
+]

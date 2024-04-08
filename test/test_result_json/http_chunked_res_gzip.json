@@ -1,0 +1,41 @@
+[{
+		"__X_HTTP_TUPLE4":	"127.0.0.1.33412>127.0.0.1.8080",
+		"__X_HTTP_RESULT_INDEX":	"0"
+	}, {
+		"__X_HTTP_TRANSACTION":	"request",
+		"method":	"GET",
+		"uri":	"/",
+		"req_version":	"1.1",
+		"major_version":	1,
+		"minor_version":	1,
+		"Host":	"www.wireshark.org:8080",
+		"User-Agent":	"curl/7.46.0",
+		"Accept":	"*/*",
+		"Connection":	"close",
+		"Accept-Encoding":	"chunked, gzip",
+		"__X_HTTP_URL":	"www.wireshark.org:8080/",
+		"__X_HTTP_RESULT_INDEX":	"1"
+	}, {
+		"__X_HTTP_TRANSACTION":	"response",
+		"res_version":	"1.1",
+		"res_status":	"OK",
+		"major_version":	1,
+		"minor_version":	1,
+		"status_code":	200,
+		"Server":	"cloudflare-nginx",
+		"Date":	"Wed, 06 Jan 2016 20:42:10 GMT",
+		"Content-Type":	"text/html",
+		"Transfer-Encoding":	"chunked",
+		"Connection":	"close",
+		"Set-Cookie":	"__cfduid=d8d37b52eaa3137bdfd7fd67a4ffc8a7a1452112929; expires=Thu, 05-Jan-17 20:42:09 GMT; path=/; domain=.wireshark.org; HttpOnly",
+		"X-Frame-Options":	"SAMEORIGIN",
+		"Strict-Transport-Security":	"max-age=31536000;",
+		"X-Slogan":	"It's a great product with a great story to tell. I'm pumped!",
+		"X-Mod-Pagespeed":	"1.9.32.11-7550",
+		"Vary":	"Accept-Encoding",
+		"Cache-control":	"max-age=0, no-cache, no-store",
+		"X-Slogan1":	"Go deep.",
+		"CF-RAY":	"260a3f709d7b0761-AMS",
+		"Content-Encoding":	"gzip",
+		"__X_HTTP_RESULT_INDEX":	"2"
+	}]

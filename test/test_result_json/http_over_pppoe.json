@@ -1,0 +1,35 @@
+[
+    {
+        "__X_HTTP_TUPLE4": "2a00:5e80:101:212d:504:7b1:2572:db22.37034>2606:f200:0:7:bad:f00d:d00d:1.80",
+        "__X_HTTP_RESULT_INDEX": "0"
+    },
+    {
+        "__X_HTTP_TRANSACTION": "request",
+        "method": "GET",
+        "uri": "/",
+        "req_version": "1.1",
+        "major_version": 1,
+        "minor_version": 1,
+        "User-Agent": "curl/7.34.0",
+        "Host": "ipv6.icanhazip.com",
+        "Accept": "*/*",
+        "__X_HTTP_URL": "ipv6.icanhazip.com/",
+        "__X_HTTP_RESULT_INDEX": "1"
+    },
+    {
+        "__X_HTTP_TRANSACTION": "response",
+        "res_version": "1.1",
+        "res_status": "OK",
+        "major_version": 1,
+        "minor_version": 1,
+        "status_code": 200,
+        "Date": "Thu, 02 Jan 2014 08:38:06 GMT",
+        "Server": "Apache",
+        "Content-Length": "38",
+        "Content-Type": "text/plain; charset=UTF-8",
+        "X-RTFM": "Learn about this site at http://bit.ly/14DAh2o and don't abuse the service",
+        "X-YOU-SHOULD-APPLY-FOR-A-JOB": "If you're reading this, apply here: http://rackertalent.com/",
+        "X-ICANHAZNODE": "icanhazip1.nugget",
+        "__X_HTTP_RESULT_INDEX": "2"
+    }
+]

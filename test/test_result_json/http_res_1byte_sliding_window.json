@@ -1,0 +1,34 @@
+[
+	{
+		"__X_HTTP_TUPLE4": "192.168.42.40.36338>192.168.40.137.80",
+		"__X_HTTP_RESULT_INDEX": "0"
+	},
+	{
+		"__X_HTTP_TRANSACTION": "request",
+		"method": "GET",
+		"uri": "/index.html",
+		"req_version": "1.1",
+		"major_version": 1,
+		"minor_version": 1,
+		"User-Agent": "Wget/1.14 (linux-gnu)",
+		"Accept": "*/*",
+		"Host": "192.168.40.137",
+		"Connection": "Keep-Alive",
+		"__X_HTTP_URL": "192.168.40.137/index.html",
+		"__X_HTTP_RESULT_INDEX": "1"
+	},
+	{
+		"__X_HTTP_TRANSACTION": "response",
+		"res_version": "1.0",
+		"res_status": "OK",
+		"major_version": 1,
+		"minor_version": 0,
+		"status_code": 200,
+		"Server": "SimpleHTTP/0.6 Python/2.7.5",
+		"Date": "Fri, 29 Dec 2023 09:32:21 GMT",
+		"Content-type": "text/html",
+		"Content-Length": "144",
+		"Last-Modified": "Fri, 29 Dec 2023 08:50:53 GMT",
+		"__X_HTTP_RESULT_INDEX": "2"
+	}
+]

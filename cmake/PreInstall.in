@@ -1,0 +1,22 @@
+DST=${RPM_INSTALL_PREFIX}/sapp/
+
+mkdir -p ${DST}/plug/stellar_on_sapp
+mkdir -p ${DST}/stellar_plugin/
+touch ${DST}/stellar_plugin/spec.toml
+touch ${DST}/plug/conflist.inf
+
+if ! grep -q '^\./plug/stellar_on_sapp/start_loader.inf$' "${DST}/plug/conflist.inf"; then
+    if grep -q '^\[platform\]$' "${DST}/plug/conflist.inf"; then
+        sed -i '/^\[platform\]$/a\./plug/stellar_on_sapp/start_loader.inf' "${DST}/plug/conflist.inf"
+    else
+        echo -e "[platform]\n./plug/stellar_on_sapp/start_loader.inf" >> "${DST}/plug/conflist.inf"
+    fi
+fi
+
+if ! grep -q '^\./plug/stellar_on_sapp/defer_loader.inf$' "${DST}/plug/conflist.inf"; then
+    if grep -q '^\[business\]$' "${DST}/plug/conflist.inf"; then
+        sed -i '/^\[business\]$/a\./plug/stellar_on_sapp/defer_loader.inf' "${DST}/plug/conflist.inf"
+    else
+        echo -e "[business]\n./plug/stellar_on_sapp/defer_loader.inf" >> "${DST}/plug/conflist.inf"
+    fi
+fi
