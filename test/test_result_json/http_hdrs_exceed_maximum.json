@@ -42,5 +42,6 @@
 		"Keep-Alive":	"timeout=15",
 		"Connection":	"Keep-Alive",
 		"Content-Type":	"image/gif",
+		"__X_HTTP_PAYLOAD_MD5":	"ad480fd0732d0f6f1a8b06359e3a42bb",
 		"__X_HTTP_RESULT_INDEX":	"2"
 	}]

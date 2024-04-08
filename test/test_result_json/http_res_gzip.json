@@ -39,6 +39,7 @@
         "Content-Length": "92",
         "Connection": "close",
         "Content-Type": "text/html; charset=UTF-8",
+        "__X_HTTP_PAYLOAD_MD5":	"61b9e97f96045587bb55db781f7543ad",
         "__X_HTTP_RESULT_INDEX": "2"
     }
 ]

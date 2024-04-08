@@ -26,7 +26,7 @@ extern "C"
 #include "stellar/stellar.h"
 #include "stellar/session_exdata.h"
 #include "stellar/session_mq.h"
-
+#include "md5.h"
     int commit_test_result_json(cJSON *node, const char *name);
 }
 #endif
@@ -44,6 +44,7 @@ enum http_transaction_type
 struct gtest_plug_exdata_t
 {
     cJSON *result_jnode[HTTP_TRANSACTION_MAX];
+    MD5_CTX *md5ctx[HTTP_TRANSACTION_MAX];
 };
 
 static int g_result_count = 0;
@@ -51,7 +52,7 @@ static int g_header_count = 1;
 static int g_exdata_idx = 0;
 static int g_topic_id = 0;
 
-#if 1
+#if 0
 void output_http_req_line(struct http_request_line *req_line)
 {
     char tmp_str[MAX_KEY_STR_LEN] = {0};
@@ -87,7 +88,6 @@ void output_http_header(struct http_header *header)
     memcpy(tmp_val, header->val.str, header->val.str_len);
     printf("<%s:%s>\n", tmp_key, tmp_val);
 }
-#endif
 
 void output_http_body(struct hstring *body, int decompress_flag)
 {
@@ -114,6 +114,21 @@ void output_http_body(struct hstring *body, int decompress_flag)
         counter++;
     }
     printf("\n");
+}
+#endif
+
+static void append_http_payload(struct session *sess, struct gtest_plug_exdata_t *gtest_plug_exdata, const struct hstring *body, enum http_transaction_type type)
+{
+    if (NULL == body->str || 0 == body->str_len)
+    {
+        return;
+    }
+    if (NULL == gtest_plug_exdata->md5ctx[type])
+    {
+        gtest_plug_exdata->md5ctx[type] = MMALLOC(MD5_CTX, sizeof(MD5_CTX));
+        MD5Init(gtest_plug_exdata->md5ctx[type]);
+    }
+    MD5Update(gtest_plug_exdata->md5ctx[type], (unsigned char *)body->str, body->str_len);
 }
 
 int http_field_to_json(cJSON *object, const char *key, char *val, size_t val_len)
@@ -206,6 +221,22 @@ static void commit_last_half_flow_data(struct session *sess, struct gtest_plug_e
     cJSON *last_jnode = gtest_plug_exdata->result_jnode[type];
     if (last_jnode)
     {
+        // finish md5 streming hash
+        if (gtest_plug_exdata->md5ctx[type])
+        {
+            unsigned char md5_result_bin[16] = {0};
+            unsigned char md5_result_cstr[33] = {0};
+            MD5Final(md5_result_bin, gtest_plug_exdata->md5ctx[type]);
+
+            for (int i = 0; i < 16; i++)
+                sprintf((char *)md5_result_cstr + 2 * i, "%02x", md5_result_bin[i]);
+            md5_result_cstr[32] = '\0';
+
+            cJSON_AddStringToObject(last_jnode, GTEST_HTTP_PAYLOAD_MD5_NAME, (char *)md5_result_cstr);
+            FREE(gtest_plug_exdata->md5ctx[type]);
+            gtest_plug_exdata->md5ctx[type] = NULL;
+        }
+
         sprintf(result_name, "%d", g_result_count);
         commit_test_result_json(last_jnode, result_name);
         gtest_plug_exdata->result_jnode[type] = NULL;
@@ -280,11 +311,11 @@ http_decoder_test_entry(struct session *sess, int topic_id, const void *data,
         http_url_add_to_json(gtest_plug_exdata->result_jnode[HTTP_TRANSACTION_REQ], msg);
         break;
     case HTTP_MESSAGE_REQ_BODY:
-        http_message_get_request_raw_body(msg, &body);
-        // output_http_body(&body, 0);
-
+        // http_message_get_request_raw_body(msg, &body);
+        //  output_http_body(&body, 0);
         http_message_get_request_decompress_body(msg, &body);
         // output_http_body(&body, 1);
+        append_http_payload(sess, gtest_plug_exdata, &body, HTTP_TRANSACTION_REQ);
         break;
     case HTTP_MESSAGE_RES_LINE:
         commit_last_half_flow_data(sess, gtest_plug_exdata, HTTP_TRANSACTION_RES);
@@ -299,11 +330,11 @@ http_decoder_test_entry(struct session *sess, int topic_id, const void *data,
         g_header_count = 1;
         break;
     case HTTP_MESSAGE_RES_BODY:
-        http_message_get_response_raw_body(msg, &body);
-        // output_http_body(&body, 0);
-
+        // http_message_get_response_raw_body(msg, &body);
+        //  output_http_body(&body, 0);
         http_message_get_response_decompress_body(msg, &body);
         // output_http_body(&body, 1);
+        append_http_payload(sess, gtest_plug_exdata, &body, HTTP_TRANSACTION_RES);
         break;
 
         // to do: check payload

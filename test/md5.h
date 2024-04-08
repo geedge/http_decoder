@@ -34,7 +34,7 @@ typedef unsigned char *POINTER;
 typedef unsigned short int UINT2;
 
 /* UINT4 defines a four byte word */
-//typedef unsigned long int UINT4;
+// typedef unsigned long int UINT4;
 typedef unsigned int UINT4;
 
 /* PROTO_LIST is defined depending on how PROTOTYPES is defined above.
@@ -48,23 +48,27 @@ typedef unsigned int UINT4;
 #endif
 
 /* MD5 context. */
-typedef struct {
-  UINT4 state[4];                                   /* state (ABCD) */
-  UINT4 count[2];        /* number of bits, modulo 2^64 (lsb first) */
-  unsigned char buffer[64];                         /* input buffer */
+typedef struct
+{
+  UINT4 state[4];           /* state (ABCD) */
+  UINT4 count[2];           /* number of bits, modulo 2^64 (lsb first) */
+  unsigned char buffer[64]; /* input buffer */
 } MD5_CTX;
-
-void MD5Init PROTO_LIST ((MD5_CTX *));
-void MD5Update PROTO_LIST ((MD5_CTX *, unsigned char *, unsigned int));
-void MD5Final PROTO_LIST ((unsigned char [16], MD5_CTX *));
 
 #ifdef __cplusplus
 extern "C"
 {
-char *MESA_MD5_sum_str(unsigned char *raw_data, unsigned int raw_data_len, char result[33]);
-char *MESA_MD5_sum_bin(unsigned char *raw_data, unsigned int raw_data_len, char result[16]);
+  void MD5Init(MD5_CTX *context);
+  void MD5Update(
+      MD5_CTX *context,       /* context */
+      unsigned char *input,   /* input block */
+      unsigned int inputLen); /* length of input block */
+  void MD5Final(
+      unsigned char digest[16], /* message digest */
+      MD5_CTX *context);        /* context */
+  char *MESA_MD5_sum_str(unsigned char *raw_data, unsigned int raw_data_len, char result[33]);
+  char *MESA_MD5_sum_bin(unsigned char *raw_data, unsigned int raw_data_len, char result[16]);
 }
 #endif
-
 
 #endif

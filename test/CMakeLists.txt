@@ -12,7 +12,7 @@ include_directories(/usr/local/include/cjson)
 include_directories(/opt/tsg/framework/include/stellar)
 include_directories(/opt/MESA/include/MESA)
 
-add_executable(gtest_http_decoder http_decoder_driver.cpp http_decoder_stub.cpp http_decoder_gtest.cpp)
+add_executable(gtest_http_decoder http_decoder_driver.cpp http_decoder_stub.cpp http_decoder_gtest.cpp md5.c)
 link_directories(${CMAKE_BINARY_DIR}/src)
 target_link_libraries(gtest_http_decoder http_decoder gtest pcap MESA_jump_layer cjson-static)
 
@@ -51,6 +51,7 @@ add_test(NAME HTTP_CHUNKED_RES_GZIP_TEST COMMAND ${TEST_MAIN}  -b ${CMAKE_CURREN
 add_test(NAME HTTP_OVER_TCP_KEEPALIVE_TEST COMMAND ${TEST_MAIN}  -b ${CMAKE_CURRENT_SOURCE_DIR}/test_result_json/http_over_tcp_keepalive.json
         -p ${CMAKE_CURRENT_SOURCE_DIR}/http_pcap/http_over_tcp_keepalive.pcap  WORKING_DIRECTORY ${TEST_RUN_DIR})
 
+#todo: support http tunnel to fully parse pop3 protocol
 add_test(NAME HTTP_TUNNEL_FOR_POP3_TEST COMMAND ${TEST_MAIN}  -b ${CMAKE_CURRENT_SOURCE_DIR}/test_result_json/http_tunnel_for_pop3.json
         -p ${CMAKE_CURRENT_SOURCE_DIR}/http_pcap/http_tunnel_for_pop3.pcap  WORKING_DIRECTORY ${TEST_RUN_DIR})
 
@@ -117,6 +118,15 @@ add_test(NAME HTTP_URL_WITHOUT_HOST_TEST COMMAND ${TEST_MAIN}  -b ${CMAKE_CURREN
 add_test(NAME HTTP_6OVER4_SINGLE_TRANS_TEST COMMAND ${TEST_MAIN}  -b ${CMAKE_CURRENT_SOURCE_DIR}/test_result_json/http_6over4_single_trans.json
         -p ${CMAKE_CURRENT_SOURCE_DIR}/http_pcap/http_6over4_single_trans.pcap WORKING_DIRECTORY ${TEST_RUN_DIR})
 
+add_test(NAME HTTP_POST_SINGLE_TRANS_TEST COMMAND ${TEST_MAIN} -b ${CMAKE_CURRENT_SOURCE_DIR}/test_result_json/http_post_single_trans.json
+         -p ${CMAKE_CURRENT_SOURCE_DIR}/http_pcap/http_post_single_trans.pcap WORKING_DIRECTORY ${TEST_RUN_DIR})
+
+add_test(NAME HTTP_SELF_CONSISTENT_V4_TEST COMMAND ${TEST_MAIN}  -b ${CMAKE_CURRENT_SOURCE_DIR}/test_result_json/http_get_single_trans.json
+        -s ${CMAKE_CURRENT_SOURCE_DIR}/test_result_json/http_get_single_trans.json WORKING_DIRECTORY ${TEST_RUN_DIR})
+
+add_test(NAME HTTP_SELF_CONSISTENT_V6_TEST COMMAND ${TEST_MAIN}  -b ${CMAKE_CURRENT_SOURCE_DIR}/test_result_json/http_6over4_single_trans.json
+        -s ${CMAKE_CURRENT_SOURCE_DIR}/test_result_json/http_6over4_single_trans.json WORKING_DIRECTORY ${TEST_RUN_DIR})
+
 set_tests_properties(HTTP_GET_SINGLE_TRANS_TEST
                         HTTP_GET_SINGLE_TRANS_MSS1_TEST
                      HTTP_GET_MULTI_TRANS_TEST
@@ -146,4 +156,7 @@ set_tests_properties(HTTP_GET_SINGLE_TRANS_TEST
                      HTTP_URL_WITH_HOST_TEST
                      HTTP_URL_WITHOUT_HOST_TEST
                      HTTP_6OVER4_SINGLE_TRANS_TEST
+                     HTTP_POST_SINGLE_TRANS_TEST
+                     HTTP_SELF_CONSISTENT_V4_TEST
+                     HTTP_SELF_CONSISTENT_V6_TEST
                      PROPERTIES FIXTURES_REQUIRED TestFixture)

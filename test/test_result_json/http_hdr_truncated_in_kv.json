@@ -48,6 +48,7 @@
 		"X-Robots-Tag4": "noindex, nofollow",
 		"Report-To": "{ \"url\": \"https://pxl.tsyndicate.com/api/v1/heavy-ad/report\", \"max_age\": 86401 }",
 		"Content-Encoding": "gzip",
+		"__X_HTTP_PAYLOAD_MD5":	"075802aa31b42d465d56b213915fb0a2",
 		"__X_HTTP_RESULT_INDEX": "2"
 	}
 ]
