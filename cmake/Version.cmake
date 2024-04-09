@@ -1,4 +1,6 @@
+
 # Using autorevision.sh to generate version information
+
 set(__SOURCE_AUTORESIVISION ${CMAKE_SOURCE_DIR}/autorevision.sh)
 set(__AUTORESIVISION ${CMAKE_BINARY_DIR}/autorevision.sh)
 set(__VERSION_CACHE ${CMAKE_BINARY_DIR}/version.txt)
@@ -8,40 +10,45 @@ file(COPY ${__SOURCE_AUTORESIVISION} DESTINATION ${CMAKE_BINARY_DIR}
 	FILE_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE
 	WORLD_READ WORLD_EXECUTE)
 
-# Execute autorevision.sh to generate version information
-execute_process(COMMAND ${__AUTORESIVISION} -t cmake -o ${__VERSION_CACHE} OUTPUT_FILE ${__VERSION_CONFIG})
+# execute autorevision.sh to generate version information
+execute_process(COMMAND ${__AUTORESIVISION} -t cmake -o ${__VERSION_CACHE} 
+				OUTPUT_FILE ${__VERSION_CONFIG} ERROR_QUIET)
 include(${__VERSION_CONFIG})
 
-# Extract major, minor, patch version from git tag
-string(REGEX REPLACE "^v([0-9]+)\\..*" "\\1" HTTP_DECODER_VERSION_MAJOR "${VCS_TAG}")
-string(REGEX REPLACE "^v[0-9]+\\.([0-9]+).*" "\\1" HTTP_DECODER_VERSION_MINOR "${VCS_TAG}")
-string(REGEX REPLACE "^v[0-9]+\\.[0-9]+\\.([0-9]+).*" "\\1" HTTP_DECODER_VERSION_PATCH "${VCS_TAG}")
-string(REGEX REPLACE "[T\\:\\+\\-]" "" HTTP_DECODER_VERSION_DATE "${VCS_DATE}")
+# extract major, minor, patch version from git tag
+string(REGEX REPLACE "^v([0-9]+)\\..*" "\\1" VERSION_MAJOR "${VCS_TAG}")
+string(REGEX REPLACE "^v[0-9]+\\.([0-9]+).*" "\\1" VERSION_MINOR "${VCS_TAG}")
+string(REGEX REPLACE "^v[0-9]+\\.[0-9]+\\.([0-9]+).*" "\\1" VERSION_PATCH "${VCS_TAG}")
+string(REGEX REPLACE "[T\\:\\+\\-]" "" VERSION_DATE "${VCS_DATE}")
 
-if(STELLAR_VERSION_DAILY_BUILD)
-	set(HTTP_DECODER_VERSION_PATCH ${HTTP_DECODER_VERSION_PATCH}.${HTTP_DECODER_VERSION_DATE})
+if(VERSION_DAILY_BUILD)
+	set(VERSION_PATCH ${VERSION_PATCH}.${VERSION_DATE})
 endif()
 
-if(NOT HTTP_DECODER_VERSION_MAJOR)
-	set(HTTP_DECODER_VERSION_MAJOR 1)
+if(NOT VERSION_MAJOR)
+    set(VERSION_MAJOR 1)
 endif()
 
-if(NOT HTTP_DECODER_VERSION_MINOR)
-	set(HTTP_DECODER_VERSION_MINOR 0)
+if(NOT VERSION_MINOR)
+    set(VERSION_MINOR 0)
 endif()
 
-if(NOT HTTP_DECODER_VERSION_PATCH)
-	set(HTTP_DECODER_VERSION_PATCH 0)
+if(NOT VERSION_PATCH)
+    set(VERSION_PATCH 0)
 endif()
 
-set(HTTP_DECODER_DESCRIBE "${VCS_SHORT_HASH}")
-set(STELLAR_VERSION "${HTTP_DECODER_VERSION_MAJOR}.${HTTP_DECODER_VERSION_MINOR}.${HTTP_DECODER_VERSION_PATCH}")
-set(HTTP_DECODER_GIT_VERSION "${HTTP_DECODER_VERSION_MAJOR}.${HTTP_DECODER_VERSION_MINOR}.${HTTP_DECODER_VERSION_PATCH}-${HTTP_DECODER_DESCRIBE}")
+set(VERSION "${VERSION_MAJOR}_${VERSION_MINOR}_${VERSION_PATCH}")
+set(VERSION_BUILD "${VCS_SHORT_HASH}")
 
-# Replace .- with _
-string(REGEX REPLACE "[\\.\\-]" "_" STELLAR_VAR_VERSION "${HTTP_DECODER_GIT_VERSION}")
+# print information
+message(STATUS "Version: ${VERSION}-${VERSION_BUILD}")
 
-# Print information
-message(STATUS "Welcome to stateful network function development platform, Version: ${HTTP_DECODER_GIT_VERSION}")
-add_definitions(-DHTTP_DECODER_GIT_VERSION=\"${HTTP_DECODER_GIT_VERSION}\")
-add_definitions(-DHTTP_DECODER_VAR_VERSION=${HTTP_DECODER_VAR_VERSION})
+option(DEFINE_GIT_VERSION "Set DEFINE_GIT_VERSION to TRUE or FALSE" TRUE)
+
+if(DEFINE_GIT_VERSION)
+	set(GIT_VERSION
+			"${VERSION}-${CMAKE_BUILD_TYPE}-${VERSION_BUILD}-${VCS_BRANCH}-${VCS_TAG}-${VCS_DATE}")
+	string(REGEX REPLACE "[-:+/\\.]" "_" GIT_VERSION ${GIT_VERSION})
+
+	add_definitions(-DGIT_VERSION=${GIT_VERSION})
+endif()

@@ -19,9 +19,10 @@ if(NOT CMAKE_BUILD_TYPE)
 	set(CMAKE_BUILD_TYPE RelWithDebInfo)
 endif()
 
-if (CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
-	set (CMAKE_INSTALL_PREFIX "/opt/tsg/" CACHE PATH "default install path" FORCE)
-endif()
+# if (CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+# 	set (CMAKE_INSTALL_PREFIX "/opt/tsg/" CACHE PATH "default install path" FORCE)
+# endif()
+set(CMAKE_INSTALL_PREFIX /opt/tsg/)
 
 LINK_DIRECTORIES(/opt/MESA/lib /usr/lib64)
 
@@ -84,9 +85,12 @@ add_subdirectory(src)
 enable_testing()
 add_subdirectory(test)
 
-set(CPACK_RPM_LIBRARIES_USER_FILELIST "%config(noreplace) ${CMAKE_INSTALL_PREFIX}/etc/http/http_decoder.toml")
+set(CPACK_RPM_LIBRARIES_USER_FILELIST "%config(noreplace) ${CMAKE_INSTALL_PREFIX}/sapp/etc/http/http_decoder.toml")
 
-install(FILES conf/http_decoder.toml DESTINATION ${CMAKE_INSTALL_PREFIX}/etc/http COMPONENT PROFILE)
-install(FILES include/http_decoder.h DESTINATION ${CMAKE_INSTALL_PREFIX}/framework/include/http_decoder COMPONENT Headers)
+install(FILES conf/http_decoder.toml DESTINATION ${CMAKE_INSTALL_PREFIX}/sapp/etc/http COMPONENT PROFILE)
+install(FILES include/http_decoder.h DESTINATION ${CMAKE_INSTALL_PREFIX}/framework/include/http_decoder COMPONENT HEADER)
 
+SET(CPACK_RPM_LIBRARIES_PRE_INSTALL_SCRIPT_FILE "${PROJECT_SOURCE_DIR}/cmake/PreInstall.sh")
+SET(CPACK_RPM_LIBRARIES_PRE_UNINSTALL_SCRIPT_FILE "${PROJECT_SOURCE_DIR}/cmake/PreUninstall.sh")
+SET(CPACK_RPM_LIBRARIES_POST_INSTALL_SCRIPT_FILE "${PROJECT_SOURCE_DIR}/cmake/PostInstall.sh")
 include(Package)
