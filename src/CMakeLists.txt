@@ -15,4 +15,4 @@ set_target_properties(http_decoder PROPERTIES LINK_FLAGS "-Wl,--version-script=$
 target_link_libraries(http_decoder z brotlidec llhttp-static fieldstat4)
 set_target_properties(http_decoder PROPERTIES PREFIX "")
 
-install(TARGETS http_decoder LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/stellar_plugin/${lib_name} COMPONENT LIBRARIES)
+install(TARGETS http_decoder LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/sapp/stellar_plugin/${lib_name} COMPONENT LIBRARIES)
