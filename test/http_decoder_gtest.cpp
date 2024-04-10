@@ -37,7 +37,7 @@ enum http_transaction_type
 {
     HTTP_TRANSACTION_REQ = 0,
     HTTP_TRANSACTION_RES,
-    HTTP_TRANSACTION_SESSION,
+    HTTP_TRANSACTION_SESSION, // global session info
     HTTP_TRANSACTION_MAX
 };
 
@@ -146,6 +146,11 @@ int http_field_to_json(cJSON *object, const char *key, char *val, size_t val_len
     return 0;
 }
 
+void transaction_index_to_json(cJSON *ctx, int transaction_index)
+{
+    cJSON_AddNumberToObject(ctx, GTEST_HTTP_TRANS_SEQ_NAME, transaction_index);
+}
+
 void req_line_to_json(cJSON *ctx, struct http_request_line *req_line)
 {
     http_field_to_json(ctx, "method", req_line->method.str,
@@ -214,7 +219,8 @@ void http_url_add_to_json(cJSON *ctx, struct http_message *msg)
 }
 
 // Full duplex
-static void commit_last_half_flow_data(struct session *sess, struct gtest_plug_exdata_t *gtest_plug_exdata, enum http_transaction_type type)
+static void commit_last_half_flow_data(struct session *sess, struct gtest_plug_exdata_t *gtest_plug_exdata,
+                                       struct http_message *msg, enum http_transaction_type type)
 {
     char result_name[MAX_KEY_STR_LEN] = {0};
 
@@ -251,6 +257,10 @@ static void commit_last_half_flow_data(struct session *sess, struct gtest_plug_e
     else if (HTTP_TRANSACTION_RES == type)
     {
         cJSON_AddStringToObject(gtest_plug_exdata->result_jnode[type], GTEST_HTTP_TRANS_NAME, "response");
+    }
+    if (msg)
+    {
+        transaction_index_to_json(gtest_plug_exdata->result_jnode[type], http_message_get_transaction_seq(msg));
     }
 }
 
@@ -298,7 +308,7 @@ http_decoder_test_entry(struct session *sess, int topic_id, const void *data,
     switch (msg_type)
     {
     case HTTP_MESSAGE_REQ_LINE:
-        commit_last_half_flow_data(sess, gtest_plug_exdata, HTTP_TRANSACTION_REQ);
+        commit_last_half_flow_data(sess, gtest_plug_exdata, msg, HTTP_TRANSACTION_REQ);
         http_message_get_request_line(msg, &req_line);
         req_line_to_json(gtest_plug_exdata->result_jnode[HTTP_TRANSACTION_REQ], &req_line);
         break;
@@ -318,7 +328,7 @@ http_decoder_test_entry(struct session *sess, int topic_id, const void *data,
         append_http_payload(sess, gtest_plug_exdata, &body, HTTP_TRANSACTION_REQ);
         break;
     case HTTP_MESSAGE_RES_LINE:
-        commit_last_half_flow_data(sess, gtest_plug_exdata, HTTP_TRANSACTION_RES);
+        commit_last_half_flow_data(sess, gtest_plug_exdata, msg, HTTP_TRANSACTION_RES);
         http_message_get_response_line(msg, &res_line);
         res_line_to_json(gtest_plug_exdata->result_jnode[HTTP_TRANSACTION_RES], &res_line);
         break;
@@ -353,11 +363,11 @@ void http_decoder_test_exdata_free(struct session *sess, int idx, void *ex_ptr,
         struct gtest_plug_exdata_t *gtest_plug_exdata = (struct gtest_plug_exdata_t *)ex_ptr;
         if (gtest_plug_exdata->result_jnode[HTTP_TRANSACTION_REQ])
         {
-            commit_last_half_flow_data(sess, gtest_plug_exdata, HTTP_TRANSACTION_REQ);
+            commit_last_half_flow_data(sess, gtest_plug_exdata, NULL, HTTP_TRANSACTION_REQ);
         }
         if (gtest_plug_exdata->result_jnode[HTTP_TRANSACTION_RES])
         {
-            commit_last_half_flow_data(sess, gtest_plug_exdata, HTTP_TRANSACTION_RES);
+            commit_last_half_flow_data(sess, gtest_plug_exdata, NULL, HTTP_TRANSACTION_RES);
         }
         free(ex_ptr);
     }

@@ -1,19 +1,19 @@
 	[
 		{
-			"__X_HTTP_TUPLE4": "192.168.4.2.36598>108.61.176.217.80",
-			"__X_HTTP_RESULT_INDEX": "0"
+			"__X_HTTP_TUPLE4": "192.168.4.2.36598>108.61.176.217.80"
 		},
 		{
 			"__X_HTTP_TRANSACTION": "request",
+			"__X_HTTP_TRANSACTION_SEQ": 0,
 			"method": "GET",
 			"uri": "/",
 			"req_version": "1.1",
 			"major_version": 1,
-			"minor_version": 1,
-			"__X_HTTP_RESULT_INDEX": "1"
+			"minor_version": 1
 		},
 		{
 			"__X_HTTP_TRANSACTION": "response",
+			"__X_HTTP_TRANSACTION_SEQ": 0,
 			"res_version": "1.0",
 			"res_status": "OK",
 			"major_version": 1,
@@ -23,7 +23,6 @@
 			"Date": "Wed, 12 Sep 2018 19:45:55 GMT",
 			"Content-Type": "text/html",
 			"Content-Length": "1547",
-			"__X_HTTP_PAYLOAD_MD5": "1807c0ebdda65240e058706d9626d2af",
-			"__X_HTTP_RESULT_INDEX": "2"
+			"__X_HTTP_PAYLOAD_MD5": "1807c0ebdda65240e058706d9626d2af"
 		}
 	]

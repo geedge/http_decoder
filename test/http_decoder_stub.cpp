@@ -30,7 +30,7 @@ extern "C"
         assert(node != NULL || name != NULL);
         if (g_fake_stellar->http_plug_test_result_root)
         {
-            cJSON_AddStringToObject(node, "__X_HTTP_RESULT_INDEX", name);
+            // cJSON_AddStringToObject(node, "__X_HTTP_RESULT_INDEX", name);
             cJSON_AddItemToArray(g_fake_stellar->http_plug_test_result_root, node);
             return 0;
         }

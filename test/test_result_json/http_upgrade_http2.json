@@ -1,10 +1,10 @@
 [
 	{
-		"__X_HTTP_TUPLE4": "10.9.0.2.58038>139.162.123.134.80",
-		"__X_HTTP_RESULT_INDEX": "0"
+		"__X_HTTP_TUPLE4": "10.9.0.2.58038>139.162.123.134.80"
 	},
 	{
 		"__X_HTTP_TRANSACTION": "request",
+		"__X_HTTP_TRANSACTION_SEQ": 0,
 		"method": "GET",
 		"uri": "/robots.txt",
 		"req_version": "1.1",
@@ -16,27 +16,26 @@
 		"Connection": "Upgrade, HTTP2-Settings",
 		"Upgrade": "h2c",
 		"HTTP2-Settings": "AAMAAABkAARAAAAAAAIAAAAA",
-		"__X_HTTP_URL": "nghttp2.org/robots.txt",
-		"__X_HTTP_RESULT_INDEX": "1"
+		"__X_HTTP_URL": "nghttp2.org/robots.txt"
 	},
 	{
 		"__X_HTTP_TRANSACTION": "request",
+		"__X_HTTP_TRANSACTION_SEQ": 1,
 		"method": "PRI",
 		"uri": "*",
 		"req_version": "2.0",
 		"major_version": 2,
-		"minor_version": 0,
-		"__X_HTTP_RESULT_INDEX": "2"
+		"minor_version": 0
 	},
 	{
 		"__X_HTTP_TRANSACTION": "response",
+		"__X_HTTP_TRANSACTION_SEQ": 0,
 		"res_version": "1.1",
 		"res_status": "Switching Protocols",
 		"major_version": 1,
 		"minor_version": 1,
 		"status_code": 101,
 		"Connection": "Upgrade",
-		"Upgrade": "h2c",
-		"__X_HTTP_RESULT_INDEX": "3"
+		"Upgrade": "h2c"
 	}
 ]

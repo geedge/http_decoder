@@ -23,6 +23,7 @@
 #include <pcap/pcap.h>
 #include "http_decoder_gtest.h"
 #include "MESA_jump_layer.h"
+#include "base64.h"
 
 extern "C" int http_decoder_entry(struct session *sess, int events,
                                   const struct packet *pkt, void *cb_arg);
@@ -42,10 +43,12 @@ static const struct option hdgt_cla_long_options[] =
         {NULL, 0, NULL, 0}};
 
 static const char *g_data_src_json_non_headers[] = {
-    "__X_HTTP_TUPLE4",
-    "__X_HTTP_TRANSACTION",
-    "__X_HTTP_RESULT_INDEX",
-    "__X_HTTP_URL",
+    GTEST_HTTP_URL_NAME,
+    GTEST_HTTP_TRANS_NAME,
+    GTEST_HTTP_TRANS_SEQ_NAME,
+    GTEST_HTTP_TUPLE4_NAME,
+    GTEST_HTTP_PAYLOAD_NAME,
+    GTEST_HTTP_PAYLOAD_MD5_NAME,
     "method",
     "uri",
     "req_version",
@@ -379,6 +382,23 @@ static void hdgt_get_headers_from_json(struct data_src_json_para_t *data_src_jso
     sprintf(data_ptr, "\r\n"); // headers EOF
 }
 
+static void hdgt_get_body_from_json(struct data_src_json_para_t *data_src_json_para)
+{
+    cJSON *json_root = data_src_json_para->current_object;
+    char *data_ptr = data_src_json_para->key_value_buf + strlen(data_src_json_para->key_value_buf);
+
+    // todo, support gzip, deflate, etc.
+    // todo, cjson not support binary data, need base64 encode/decode
+    cJSON *json_body = cJSON_GetObjectItem(json_root, GTEST_HTTP_PAYLOAD_NAME);
+    if (json_body)
+    {
+        int base64_cont_len = strlen(json_body->valuestring);
+        char *raw_cont_buf = (char *)calloc(1, base64_cont_len + 1);
+        int raw_cont_len = base64_decode(json_body->valuestring, base64_cont_len, (unsigned char *)raw_cont_buf);
+        sprintf(data_ptr, "%s", raw_cont_buf);
+    }
+}
+
 static int hdgt_update_packet_detail_by_json(struct fake_stellar *fst, struct fake_packet *fpkt)
 {
     fpkt->dir = hdgt_get_packet_dir_from_json(fst->data_src_json_para.current_object);
@@ -397,6 +417,8 @@ static int hdgt_update_packet_detail_by_json(struct fake_stellar *fst, struct fa
         hdgt_get_res_line_from_json(&fst->data_src_json_para);
     }
     hdgt_get_headers_from_json(&fst->data_src_json_para);
+
+    hdgt_get_body_from_json(&fst->data_src_json_para);
 
     fpkt->payload_data = fst->data_src_json_para.key_value_buf;
     fpkt->payload_data_len = strlen(fst->data_src_json_para.key_value_buf);
@@ -484,16 +506,43 @@ static void hdgt_determine_packet_dir(struct fake_session *fses, struct fake_pac
     }
 }
 
-static void hdgt_update_packet_payload(struct fake_packet *fpkt, const struct tcphdr *th)
+static void hdgt_update_packet_payload(struct fake_packet *fpkt, const struct tcphdr *th, int from_tcp_len)
 {
     // todo, support UDP?
     fpkt->payload_data = (char *)th + th->th_off * 4;
+#if 0    
+    /* for ethernet, maybe end with padding bytes, must not use packet length, use ip header len */
     fpkt->payload_data_len = fpkt->raw_pkt_data_len - ((char *)th - fpkt->raw_pkt_data) - (th->th_off * 4);
+#else
+    fpkt->payload_data_len = from_tcp_len - (th->th_off * 4);
+#endif
     fpkt->payload_submit_offset = 0;
 }
 
 static int hdgt_update_packet_detail_by_pcap(struct fake_session *fses, struct fake_packet *fpkt)
 {
+    size_t from_tcp_len = 0;
+    if (SESSION_ADDR_TYPE_IPV4_TCP == fses->addr_type)
+    {
+        struct ip *i4h = (struct ip *)MESA_jump_layer_greedy(fpkt->raw_pkt_data, ADDR_TYPE_MAC, ADDR_TYPE_IPV4);
+        if (NULL == i4h)
+        {
+            DEBUG_PRINT("Not found ipv4 header!\n");
+            return -1;
+        }
+        from_tcp_len = ntohs(i4h->ip_len) - i4h->ip_hl * 4;
+    }
+    else
+    {
+        struct ip6_hdr *i6h = (struct ip6_hdr *)MESA_jump_layer_greedy(fpkt->raw_pkt_data, ADDR_TYPE_MAC, ADDR_TYPE_IPV6);
+        if (NULL == i6h)
+        {
+            DEBUG_PRINT("Not found ipv6 header!\n");
+            return -1;
+        }
+        from_tcp_len = ntohs(i6h->ip6_plen);
+    }
+
     struct tcphdr *th = (struct tcphdr *)MESA_jump_layer_greedy(fpkt->raw_pkt_data, ADDR_TYPE_MAC, ADDR_TYPE_TCP);
     if (NULL == th)
     {
@@ -502,7 +551,7 @@ static int hdgt_update_packet_detail_by_pcap(struct fake_session *fses, struct f
     }
 
     hdgt_determine_packet_dir(fses, fpkt, th);
-    hdgt_update_packet_payload(fpkt, th);
+    hdgt_update_packet_payload(fpkt, th, from_tcp_len);
     return 0;
 }
 
@@ -691,6 +740,7 @@ static struct session_addr *hgdt_get_session_addr_by_json(struct fake_session *f
     cJSON *tuple4_obj = cJSON_GetObjectItem(fses->fst->data_src_json_para.current_object, GTEST_HTTP_TUPLE4_NAME);
     if (NULL == tuple4_obj)
     {
+        fprintf(stderr, "Not found tuple4 object!\n");
         return NULL;
     }
     fses->addr = MMALLOC(struct session_addr, sizeof(struct session_addr));
@@ -752,6 +802,17 @@ static int hdgt_data_source_init(struct fake_stellar *fst)
     return 0;
 }
 
+static void hdgt_prune_non_result_item(cJSON *benchmark_json_root)
+{
+    int array_size = cJSON_GetArraySize(benchmark_json_root);
+
+    for (int i = 0; i < array_size; i++)
+    {
+        cJSON *object_root = cJSON_GetArrayItem(benchmark_json_root, i);
+        cJSON_DeleteItemFromObject(object_root, GTEST_HTTP_PAYLOAD_NAME);
+    }
+}
+
 static int hdgt_benchmakr_json_parse(struct fake_stellar *fst)
 {
     char *file_cont = hdgt_get_file_content(fst->benchmark_json_file_name);
@@ -769,6 +830,8 @@ static int hdgt_benchmakr_json_parse(struct fake_stellar *fst)
     }
     fst->http_plug_test_result_root = cJSON_CreateArray();
     MFREE(file_cont);
+
+    hdgt_prune_non_result_item(fst->load_benchmark_json_root);
     return 0;
 }
 

@@ -37,6 +37,7 @@ struct http_decoder_half_data {
 
     int joint_url_complete;
     struct hstring joint_url; // http://<host>[:<port>]/<path>?<searchpart>
+    long long transaction_index;
 };
 
 struct http_decoder_half {
@@ -54,6 +55,7 @@ struct http_decoder_half {
 
     long long trans_counter;
     long long err_counter;
+    long long transaction_seq;
 };
 
 // #define HTTP_DECODER_DEBUG
@@ -126,7 +128,7 @@ static int on_message_begin(llhttp_t *http)
     half->http_ev_cb(half->event, &half->ref_data, half->http_ev_ctx);
 
     half->trans_counter++;
-
+    half->ref_data->transaction_index = half->transaction_seq++;
     return 0;
 }
 
@@ -228,11 +230,21 @@ static int on_uri(llhttp_t *http, const char *at, size_t length)
 static void http_decoder_cached_portion_url(struct http_decoder_half *half, const struct hstring *uri_result)
 {
     struct http_decoder_half_data *ref_data = half->ref_data;
+    int uri_skip_len = 0;
 
-    ref_data->joint_url.str_len = uri_result->str_len;
-    ref_data->joint_url.str = MEMPOOL_CALLOC(half->http_ev_ctx->ref_mempool, char, uri_result->str_len);
-    // ref_data->joint_url.str = (char *)malloc(uri_result->str_len);
-    memcpy(ref_data->joint_url.str, uri_result->str, uri_result->str_len);
+    if ((uri_result->str_len) > 7 &&  (strncasecmp("http://", uri_result->str, 7) == 0)) // absolute URI
+    { 
+        uri_skip_len = strlen("http://");
+        ref_data->joint_url_complete = 1;
+    }
+    else
+    {
+        ref_data->joint_url_complete = 0;
+    }
+
+    ref_data->joint_url.str_len = uri_result->str_len - uri_skip_len;
+    ref_data->joint_url.str = MEMPOOL_CALLOC(half->http_ev_ctx->ref_mempool, char, ref_data->joint_url.str_len);
+    memcpy(ref_data->joint_url.str, uri_result->str+uri_skip_len, ref_data->joint_url.str_len);
 }
 
 /* Information-only callbacks, return value is ignored */
@@ -963,15 +975,22 @@ static void using_session_addr_as_host(struct session *ref_session,
 
 void http_decoder_join_url(struct http_decoder_half_data *hfdata, nmx_pool_t *mempool, const struct http_header *host_hdr)
 {
-    //int url_cache_str_len = strlen("http://") + host_hdr->val.str_len + hfdata->joint_url.str_len;
-    int url_cache_str_len = host_hdr->val.str_len + hfdata->joint_url.str_len;
+    int append_slash_len = 0;
+    if('/' != hfdata->joint_url.str[0])
+    {
+        append_slash_len = 1;
+    }
+    int url_cache_str_len = host_hdr->val.str_len + hfdata->joint_url.str_len + append_slash_len;
     char *url_cache_str = MEMPOOL_CALLOC(mempool, char, url_cache_str_len);
 
     char *ptr = url_cache_str;
-    //memcpy(ptr, "http://", strlen("http://"));
-    //ptr += strlen("http://");
     memcpy(ptr, host_hdr->val.str, host_hdr->val.str_len);
     ptr += host_hdr->val.str_len;
+    if(append_slash_len)
+    {
+        *ptr = '/';
+        ptr++;
+    }
     memcpy(ptr, hfdata->joint_url.str, hfdata->joint_url.str_len);
 
     MEMPOOL_FREE(mempool, hfdata->joint_url.str); // free the cached uri buffer
@@ -1031,4 +1050,9 @@ int http_half_data_get_url(struct http_decoder_half_data *res_data, struct hstri
     url->str_len = res_data->joint_url.str_len;
 
     return 0;
+}
+
+int http_half_data_get_transaction_seq(struct http_decoder_half_data *hf_data)
+{
+    return hf_data->transaction_index;
 }

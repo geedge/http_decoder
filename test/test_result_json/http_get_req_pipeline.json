@@ -1,10 +1,10 @@
 [
     {
-        "__X_HTTP_TUPLE4": "192.168.40.81.52802>192.168.40.137.80",
-        "__X_HTTP_RESULT_INDEX": "0"
+        "__X_HTTP_TUPLE4": "192.168.40.81.52802>192.168.40.137.80"
     },
     {
         "__X_HTTP_TRANSACTION": "request",
+        "__X_HTTP_TRANSACTION_SEQ": 0,
         "method": "GET",
         "uri": "/aa.mp4?asf=sdaf",
         "req_version": "1.1",
@@ -16,11 +16,11 @@
         "User-Agent": "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/31.0.1636.2 Safari/537.36",
         "Accept-Encoding": "gzip,deflate,sdch",
         "Accept-Language": "zh-CN,zh;q=0.8",
-        "__X_HTTP_URL": "113.31.27.226/aa.mp4?asf=sdaf",
-        "__X_HTTP_RESULT_INDEX": "1"
+        "__X_HTTP_URL": "113.31.27.226/aa.mp4?asf=sdaf"
     },
     {
         "__X_HTTP_TRANSACTION": "request",
+        "__X_HTTP_TRANSACTION_SEQ": 1,
         "method": "GET",
         "uri": "/fetch_ldns.png",
         "req_version": "1.1",
@@ -32,11 +32,11 @@
         "User-Agent": "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/31.0.1636.2 Safari/537.36",
         "Accept-Encoding": "gzip,deflate,sdch",
         "Accept-Language": "zh-CN,zh;q=0.8",
-        "__X_HTTP_URL": "ns.pb.cachecn.net/fetch_ldns.png",
-        "__X_HTTP_RESULT_INDEX": "2"
+        "__X_HTTP_URL": "ns.pb.cachecn.net/fetch_ldns.png"
     },
     {
         "__X_HTTP_TRANSACTION": "request",
+        "__X_HTTP_TRANSACTION_SEQ": 2,
         "method": "GET",
         "uri": "/40x.jpg",
         "req_version": "1.1",
@@ -48,11 +48,11 @@
         "User-Agent": "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/31.0.1636.2 Safari/537.36",
         "Accept-Encoding": "gzip,deflate,sdch",
         "Accept-Language": "zh-CN,zh;q=0.8",
-        "__X_HTTP_URL": "ns.pb.cachecn.net/40x.jpg",
-        "__X_HTTP_RESULT_INDEX": "3"
+        "__X_HTTP_URL": "ns.pb.cachecn.net/40x.jpg"
     },
     {
         "__X_HTTP_TRANSACTION": "response",
+        "__X_HTTP_TRANSACTION_SEQ": 0,
         "res_version": "1.0",
         "res_status": "File not found",
         "major_version": 1,
@@ -62,7 +62,6 @@
         "Date": "Wed, 25 Oct 2023 06:43:35 GMT",
         "Content-Type": "text/html",
         "Connection": "close",
-        "__X_HTTP_PAYLOAD_MD5": "6fb335f443cfc8a9d952d27cf3dc1059",
-        "__X_HTTP_RESULT_INDEX": "4"
+        "__X_HTTP_PAYLOAD_MD5": "6fb335f443cfc8a9d952d27cf3dc1059"
     }
 ]

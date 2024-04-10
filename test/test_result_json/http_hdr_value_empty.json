@@ -1,10 +1,10 @@
 [
     {
-        "__X_HTTP_TUPLE4": "192.168.131.33.47164>192.168.204.67.4445",
-        "__X_HTTP_RESULT_INDEX": "0"
+        "__X_HTTP_TUPLE4": "192.168.131.33.47164>192.168.204.67.4445"
     },
     {
         "__X_HTTP_TRANSACTION": "request",
+        "__X_HTTP_TRANSACTION_SEQ": 0,
         "method": "POST",
         "uri": "http://:4445/RPC2",
         "req_version": "1.1",
@@ -15,12 +15,12 @@
         "Content-Type": "text/xml",
         "Date": "Sat Sep  7 10:04:57 2019",
         "Content-Length": "468",
-        "__X_HTTP_URL": "http://:4445/RPC2",
-        "__X_HTTP_PAYLOAD_MD5":	"033e27f72bc41b4a7e222df464749420",
-        "__X_HTTP_RESULT_INDEX": "1"
+        "__X_HTTP_URL": ":4445/RPC2",
+        "__X_HTTP_PAYLOAD_MD5": "033e27f72bc41b4a7e222df464749420"
     },
     {
         "__X_HTTP_TRANSACTION": "response",
+        "__X_HTTP_TRANSACTION_SEQ": 0,
         "res_version": "1.1",
         "res_status": "OK",
         "major_version": 1,
@@ -31,7 +31,6 @@
         "Transfer-Encoding": "chunked",
         "X-Powered-By": "ulxmlrpcpp/1.7.4",
         "Date": "Sat Sep  7 01:09:08 2019",
-        "__X_HTTP_PAYLOAD_MD5":	"69db29507d10b0d57fcaa5afffd81934",
-        "__X_HTTP_RESULT_INDEX": "2"
+        "__X_HTTP_PAYLOAD_MD5": "69db29507d10b0d57fcaa5afffd81934"
     }
 ]

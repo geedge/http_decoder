@@ -1,10 +1,10 @@
 [
 	{
-		"__X_HTTP_TUPLE4": "192.168.244.1.52412>192.168.244.128.8080",
-		"__X_HTTP_RESULT_INDEX": "0"
+		"__X_HTTP_TUPLE4": "192.168.244.1.52412>192.168.244.128.8080"
 	},
 	{
 		"__X_HTTP_TRANSACTION": "request",
+		"__X_HTTP_TRANSACTION_SEQ": 0,
 		"method": "GET",
 		"uri": "/urltest/ttt",
 		"req_version": "1.1",
@@ -17,11 +17,11 @@
 		"Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
 		"Accept-Encoding": "gzip, deflate",
 		"Accept-Language": "zh-CN,zh;q=0.9,en;q=0.8",
-		"__X_HTTP_URL": "192.168.244.128:8080/urltest/ttt",
-		"__X_HTTP_RESULT_INDEX": "1"
+		"__X_HTTP_URL": "192.168.244.128:8080/urltest/ttt"
 	},
 	{
 		"__X_HTTP_TRANSACTION": "response",
+		"__X_HTTP_TRANSACTION_SEQ": 0,
 		"res_version": "1.0",
 		"res_status": "OK",
 		"major_version": 1,
@@ -30,7 +30,6 @@
 		"Server": "BaseHTTP/0.6 Python/3.6.8",
 		"Date": "Thu, 14 Mar 2024 07:37:43 GMT",
 		"Content-type": "application/json",
-		"__X_HTTP_PAYLOAD_MD5":	"49dfdd54b01cbcd2d2ab5e9e5ee6b9b9",
-		"__X_HTTP_RESULT_INDEX": "2"
+		"__X_HTTP_PAYLOAD_MD5":	"49dfdd54b01cbcd2d2ab5e9e5ee6b9b9"
 	}
 ]

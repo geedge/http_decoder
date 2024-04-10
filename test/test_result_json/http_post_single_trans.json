@@ -1,10 +1,10 @@
 [
 	{
-		"__X_HTTP_TUPLE4": "192.168.38.83.55186>192.168.40.139.8080",
-		"__X_HTTP_RESULT_INDEX": "0"
+		"__X_HTTP_TUPLE4": "192.168.38.83.55186>192.168.40.139.8080"
 	},
 	{
 		"__X_HTTP_TRANSACTION": "request",
+		"__X_HTTP_TRANSACTION_SEQ": 0,
 		"method": "POST",
 		"uri": "/",
 		"req_version": "1.1",
@@ -20,11 +20,11 @@
 		"Connection": "keep-alive",
 		"Content-Length": "26",
 		"__X_HTTP_URL": "192.168.40.139:8080/",
-		"__X_HTTP_PAYLOAD_MD5": "5ffe2871e6d5f6ee25ad7c1bfdd9f7b3",
-		"__X_HTTP_RESULT_INDEX": "1"
+		"__X_HTTP_PAYLOAD_MD5": "5ffe2871e6d5f6ee25ad7c1bfdd9f7b3"
 	},
 	{
 		"__X_HTTP_TRANSACTION": "response",
+		"__X_HTTP_TRANSACTION_SEQ": 0,
 		"res_version": "1.0",
 		"res_status": "OK",
 		"major_version": 1,
@@ -33,7 +33,6 @@
 		"Server": "BaseHTTP/0.6 Python/3.6.8",
 		"Date": "Mon, 08 Apr 2024 07:19:16 GMT",
 		"Content-length": "84",
-		"__X_HTTP_PAYLOAD_MD5": "cd8a54dd3e915946c4df262111e5aa05",
-		"__X_HTTP_RESULT_INDEX": "2"
+		"__X_HTTP_PAYLOAD_MD5": "cd8a54dd3e915946c4df262111e5aa05"
 	}
 ]

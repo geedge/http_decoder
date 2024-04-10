@@ -1,10 +1,10 @@
 [
 	{
-		"__X_HTTP_TUPLE4": "223.72.39.14.2545>192.168.182.147.80",
-		"__X_HTTP_RESULT_INDEX": "0"
+		"__X_HTTP_TUPLE4": "223.72.39.14.2545>192.168.182.147.80"
 	},
 	{
 		"__X_HTTP_TRANSACTION": "request",
+		"__X_HTTP_TRANSACTION_SEQ": 0,
 		"method": "GET",
 		"uri": "/postinfo.html",
 		"req_version": "1.1",
@@ -13,11 +13,11 @@
 		"Host": "116.181.2.152",
 		"User-Agent": "Mozilla/5.0 (compatible; Nmap Scripting Engine; https://nmap.org/book/nse.html)",
 		"Connection": "keep-alive",
-		"__X_HTTP_URL": "116.181.2.152/postinfo.html",
-		"__X_HTTP_RESULT_INDEX": "1"
+		"__X_HTTP_URL": "116.181.2.152/postinfo.html"
 	},
 	{
 		"__X_HTTP_TRANSACTION": "request",
+		"__X_HTTP_TRANSACTION_SEQ": 1,
 		"method": "GET",
 		"uri": "/_vti_bin/_vti_aut/author.dll",
 		"req_version": "1.1",
@@ -26,11 +26,11 @@
 		"Host": "116.181.2.152",
 		"User-Agent": "Mozilla/5.0 (compatible; Nmap Scripting Engine; https://nmap.org/book/nse.html)",
 		"Connection": "keep-alive",
-		"__X_HTTP_URL": "116.181.2.152/_vti_bin/_vti_aut/author.dll",
-		"__X_HTTP_RESULT_INDEX": "2"
+		"__X_HTTP_URL": "116.181.2.152/_vti_bin/_vti_aut/author.dll"
 	},
 	{
 		"__X_HTTP_TRANSACTION": "request",
+		"__X_HTTP_TRANSACTION_SEQ": 2,
 		"method": "GET",
 		"uri": "/_vti_bin/_vti_aut/author.exe",
 		"req_version": "1.1",
@@ -39,11 +39,11 @@
 		"Host": "116.181.2.152",
 		"User-Agent": "Mozilla/5.0 (compatible; Nmap Scripting Engine; https://nmap.org/book/nse.html)",
 		"Connection": "keep-alive",
-		"__X_HTTP_URL": "116.181.2.152/_vti_bin/_vti_aut/author.exe",
-		"__X_HTTP_RESULT_INDEX": "3"
+		"__X_HTTP_URL": "116.181.2.152/_vti_bin/_vti_aut/author.exe"
 	},
 	{
 		"__X_HTTP_TRANSACTION": "request",
+		"__X_HTTP_TRANSACTION_SEQ": 3,
 		"method": "GET",
 		"uri": "/_vti_bin/_vti_aut/dvwssr.dll",
 		"req_version": "1.1",
@@ -52,11 +52,11 @@
 		"Host": "116.181.2.152",
 		"User-Agent": "Mozilla/5.0 (compatible; Nmap Scripting Engine; https://nmap.org/book/nse.html)",
 		"Connection": "keep-alive",
-		"__X_HTTP_URL": "116.181.2.152/_vti_bin/_vti_aut/dvwssr.dll",
-		"__X_HTTP_RESULT_INDEX": "4"
+		"__X_HTTP_URL": "116.181.2.152/_vti_bin/_vti_aut/dvwssr.dll"
 	},
 	{
 		"__X_HTTP_TRANSACTION": "request",
+		"__X_HTTP_TRANSACTION_SEQ": 4,
 		"method": "GET",
 		"uri": "/_vti_bin/_vti_adm/admin.dll",
 		"req_version": "1.1",
@@ -65,11 +65,11 @@
 		"Host": "116.181.2.152",
 		"User-Agent": "Mozilla/5.0 (compatible; Nmap Scripting Engine; https://nmap.org/book/nse.html)",
 		"Connection": "keep-alive",
-		"__X_HTTP_URL": "116.181.2.152/_vti_bin/_vti_adm/admin.dll",
-		"__X_HTTP_RESULT_INDEX": "5"
+		"__X_HTTP_URL": "116.181.2.152/_vti_bin/_vti_adm/admin.dll"
 	},
 	{
 		"__X_HTTP_TRANSACTION": "request",
+		"__X_HTTP_TRANSACTION_SEQ": 5,
 		"method": "GET",
 		"uri": "/_vti_bin/_vti_adm/admin.exe",
 		"req_version": "1.1",
@@ -78,11 +78,11 @@
 		"Host": "116.181.2.152",
 		"User-Agent": "Mozilla/5.0 (compatible; Nmap Scripting Engine; https://nmap.org/book/nse.html)",
 		"Connection": "keep-alive",
-		"__X_HTTP_URL": "116.181.2.152/_vti_bin/_vti_adm/admin.exe",
-		"__X_HTTP_RESULT_INDEX": "6"
+		"__X_HTTP_URL": "116.181.2.152/_vti_bin/_vti_adm/admin.exe"
 	},
 	{
 		"__X_HTTP_TRANSACTION": "request",
+		"__X_HTTP_TRANSACTION_SEQ": 6,
 		"method": "GET",
 		"uri": "/_vti_bin/fpcount.exe?Page=default.asp|Image=3",
 		"req_version": "1.1",
@@ -91,11 +91,11 @@
 		"Host": "116.181.2.152",
 		"User-Agent": "Mozilla/5.0 (compatible; Nmap Scripting Engine; https://nmap.org/book/nse.html)",
 		"Connection": "keep-alive",
-		"__X_HTTP_URL": "116.181.2.152/_vti_bin/fpcount.exe?Page=default.asp|Image=3",
-		"__X_HTTP_RESULT_INDEX": "7"
+		"__X_HTTP_URL": "116.181.2.152/_vti_bin/fpcount.exe?Page=default.asp|Image=3"
 	},
 	{
 		"__X_HTTP_TRANSACTION": "response",
+		"__X_HTTP_TRANSACTION_SEQ": 0,
 		"res_version": "1.1",
 		"res_status": "Not Found",
 		"major_version": 1,
@@ -106,11 +106,11 @@
 		"Content-Type": "text/html",
 		"Content-Length": "146",
 		"Connection": "keep-alive",
-		"__X_HTTP_PAYLOAD_MD5": "32dc0b2772bd73a952abba009291a399",
-		"__X_HTTP_RESULT_INDEX": "8"
+		"__X_HTTP_PAYLOAD_MD5": "32dc0b2772bd73a952abba009291a399"
 	},
 	{
 		"__X_HTTP_TRANSACTION": "response",
+		"__X_HTTP_TRANSACTION_SEQ": 1,
 		"res_version": "1.1",
 		"res_status": "Not Found",
 		"major_version": 1,
@@ -121,11 +121,11 @@
 		"Content-Type": "text/html",
 		"Content-Length": "146",
 		"Connection": "keep-alive",
-		"__X_HTTP_PAYLOAD_MD5": "db2ff8008149d8e70d8a2929acbb0f56",
-		"__X_HTTP_RESULT_INDEX": "9"
+		"__X_HTTP_PAYLOAD_MD5": "db2ff8008149d8e70d8a2929acbb0f56"
 	},
 	{
 		"__X_HTTP_TRANSACTION": "response",
+		"__X_HTTP_TRANSACTION_SEQ": 2,
 		"res_version": "1.1",
 		"res_status": "Not Found",
 		"major_version": 1,
@@ -136,11 +136,11 @@
 		"Content-Type": "text/html",
 		"Content-Length": "146",
 		"Connection": "keep-alive",
-		"__X_HTTP_PAYLOAD_MD5": "f5df152f7d8f34c630f298d2fcb46ed3",
-		"__X_HTTP_RESULT_INDEX": "10"
+		"__X_HTTP_PAYLOAD_MD5": "f5df152f7d8f34c630f298d2fcb46ed3"
 	},
 	{
 		"__X_HTTP_TRANSACTION": "response",
+		"__X_HTTP_TRANSACTION_SEQ": 3,
 		"res_version": "1.1",
 		"res_status": "Not Found",
 		"major_version": 1,
@@ -151,11 +151,11 @@
 		"Content-Type": "text/html",
 		"Content-Length": "146",
 		"Connection": "keep-alive",
-		"__X_HTTP_PAYLOAD_MD5": "73e98ca7b62764869357b3e3c40dcd68",
-		"__X_HTTP_RESULT_INDEX": "11"
+		"__X_HTTP_PAYLOAD_MD5": "73e98ca7b62764869357b3e3c40dcd68"
 	},
 	{
 		"__X_HTTP_TRANSACTION": "response",
+		"__X_HTTP_TRANSACTION_SEQ": 4,
 		"res_version": "1.1",
 		"res_status": "Not Found",
 		"major_version": 1,
@@ -166,11 +166,11 @@
 		"Content-Type": "text/html",
 		"Content-Length": "146",
 		"Connection": "keep-alive",
-		"__X_HTTP_PAYLOAD_MD5": "a5733c8989bde7f08506fa68c20f0c62",
-		"__X_HTTP_RESULT_INDEX": "12"
+		"__X_HTTP_PAYLOAD_MD5": "a5733c8989bde7f08506fa68c20f0c62"
 	},
 	{
 		"__X_HTTP_TRANSACTION": "request",
+		"__X_HTTP_TRANSACTION_SEQ": 7,
 		"method": "GET",
 		"uri": "/_vti_bin/shtml.dll",
 		"req_version": "1.1",
@@ -179,11 +179,11 @@
 		"Host": "116.181.2.152",
 		"User-Agent": "Mozilla/5.0 (compatible; Nmap Scripting Engine; https://nmap.org/book/nse.html)",
 		"__X_HTTP_URL": "116.181.2.152/_vti_bin/shtml.dll",
-		"Connection": "keep-alive",
-		"__X_HTTP_RESULT_INDEX": "13"
+		"Connection": "keep-alive"
 	},
 	{
 		"__X_HTTP_TRANSACTION": "request",
+		"__X_HTTP_TRANSACTION_SEQ": 8,
 		"method": "GET",
 		"uri": "/_vti_bin/shtml.exe",
 		"req_version": "1.1",
@@ -192,11 +192,11 @@
 		"Host": "116.181.2.152",
 		"User-Agent": "Mozilla/5.0 (compatible; Nmap Scripting Engine; https://nmap.org/book/nse.html)",
 		"Connection": "keep-alive",
-		"__X_HTTP_URL": "116.181.2.152/_vti_bin/shtml.exe",
-		"__X_HTTP_RESULT_INDEX": "14"
+		"__X_HTTP_URL": "116.181.2.152/_vti_bin/shtml.exe"
 	},
 	{
 		"__X_HTTP_TRANSACTION": "request",
+		"__X_HTTP_TRANSACTION_SEQ": 9,
 		"method": "GET",
 		"uri": "/_vti_pvt/_x_todo.htm",
 		"req_version": "1.1",
@@ -205,11 +205,11 @@
 		"Host": "116.181.2.152",
 		"User-Agent": "Mozilla/5.0 (compatible; Nmap Scripting Engine; https://nmap.org/book/nse.html)",
 		"Connection": "keep-alive",
-		"__X_HTTP_URL": "116.181.2.152/_vti_pvt/_x_todo.htm",
-		"__X_HTTP_RESULT_INDEX": "15"
+		"__X_HTTP_URL": "116.181.2.152/_vti_pvt/_x_todo.htm"
 	},
 	{
 		"__X_HTTP_TRANSACTION": "request",
+		"__X_HTTP_TRANSACTION_SEQ": 10,
 		"method": "GET",
 		"uri": "/_vti_pvt/_x_todoh.htm",
 		"req_version": "1.1",
@@ -218,11 +218,11 @@
 		"Host": "116.181.2.152",
 		"User-Agent": "Mozilla/5.0 (compatible; Nmap Scripting Engine; https://nmap.org/book/nse.html)",
 		"Connection": "keep-alive",
-		"__X_HTTP_URL": "116.181.2.152/_vti_pvt/_x_todoh.htm",
-		"__X_HTTP_RESULT_INDEX": "16"
+		"__X_HTTP_URL": "116.181.2.152/_vti_pvt/_x_todoh.htm"
 	},
 	{
 		"__X_HTTP_TRANSACTION": "request",
+		"__X_HTTP_TRANSACTION_SEQ": 11,
 		"method": "GET",
 		"uri": "/_vti_pvt/access.cnf",
 		"req_version": "1.1",
@@ -231,11 +231,11 @@
 		"Host": "116.181.2.152",
 		"User-Agent": "Mozilla/5.0 (compatible; Nmap Scripting Engine; https://nmap.org/book/nse.html)",
 		"Connection": "keep-alive",
-		"__X_HTTP_URL": "116.181.2.152/_vti_pvt/access.cnf",
-		"__X_HTTP_RESULT_INDEX": "17"
+		"__X_HTTP_URL": "116.181.2.152/_vti_pvt/access.cnf"
 	},
 	{
 		"__X_HTTP_TRANSACTION": "request",
+		"__X_HTTP_TRANSACTION_SEQ": 12,
 		"method": "GET",
 		"uri": "/_vti_pvt/administrator.pwd",
 		"req_version": "1.1",
@@ -244,11 +244,11 @@
 		"Host": "116.181.2.152",
 		"User-Agent": "Mozilla/5.0 (compatible; Nmap Scripting Engine; https://nmap.org/book/nse.html)",
 		"Connection": "keep-alive",
-		"__X_HTTP_URL": "116.181.2.152/_vti_pvt/administrator.pwd",
-		"__X_HTTP_RESULT_INDEX": "18"
+		"__X_HTTP_URL": "116.181.2.152/_vti_pvt/administrator.pwd"
 	},
 	{
 		"__X_HTTP_TRANSACTION": "request",
+		"__X_HTTP_TRANSACTION_SEQ": 13,
 		"method": "GET",
 		"uri": "/_vti_pvt/administrators.pwd",
 		"req_version": "1.1",
@@ -257,11 +257,11 @@
 		"Host": "116.181.2.152",
 		"User-Agent": "Mozilla/5.0 (compatible; Nmap Scripting Engine; https://nmap.org/book/nse.html)",
 		"Connection": "keep-alive",
-		"__X_HTTP_URL": "116.181.2.152/_vti_pvt/administrators.pwd",
-		"__X_HTTP_RESULT_INDEX": "19"
+		"__X_HTTP_URL": "116.181.2.152/_vti_pvt/administrators.pwd"
 	},
 	{
 		"__X_HTTP_TRANSACTION": "request",
+		"__X_HTTP_TRANSACTION_SEQ": 14,
 		"method": "GET",
 		"uri": "/_vti_pvt/authors.pwd",
 		"req_version": "1.1",
@@ -270,11 +270,11 @@
 		"Host": "116.181.2.152",
 		"User-Agent": "Mozilla/5.0 (compatible; Nmap Scripting Engine; https://nmap.org/book/nse.html)",
 		"Connection": "keep-alive",
-		"__X_HTTP_URL": "116.181.2.152/_vti_pvt/authors.pwd",
-		"__X_HTTP_RESULT_INDEX": "20"
+		"__X_HTTP_URL": "116.181.2.152/_vti_pvt/authors.pwd"
 	},
 	{
 		"__X_HTTP_TRANSACTION": "response",
+		"__X_HTTP_TRANSACTION_SEQ": 5,
 		"res_version": "1.1",
 		"res_status": "Not Found",
 		"major_version": 1,
@@ -285,11 +285,11 @@
 		"Content-Type": "text/html",
 		"Content-Length": "146",
 		"Connection": "keep-alive",
-		"__X_HTTP_PAYLOAD_MD5": "4bc0dde3722f76d60fef6f1d878cbb14",
-		"__X_HTTP_RESULT_INDEX": "21"
+		"__X_HTTP_PAYLOAD_MD5": "4bc0dde3722f76d60fef6f1d878cbb14"
 	},
 	{
 		"__X_HTTP_TRANSACTION": "response",
+		"__X_HTTP_TRANSACTION_SEQ": 6,
 		"res_version": "1.1",
 		"res_status": "Not Found",
 		"major_version": 1,
@@ -300,11 +300,11 @@
 		"Content-Type": "text/html",
 		"Content-Length": "146",
 		"Connection": "keep-alive",
-		"__X_HTTP_PAYLOAD_MD5": "728dc2eafd49c9be8149add7c6aff207",
-		"__X_HTTP_RESULT_INDEX": "22"
+		"__X_HTTP_PAYLOAD_MD5": "728dc2eafd49c9be8149add7c6aff207"
 	},
 	{
 		"__X_HTTP_TRANSACTION": "response",
+		"__X_HTTP_TRANSACTION_SEQ": 7,
 		"res_version": "1.1",
 		"res_status": "Not Found",
 		"major_version": 1,
@@ -315,11 +315,11 @@
 		"Content-Type": "text/html",
 		"Content-Length": "146",
 		"Connection": "keep-alive",
-		"__X_HTTP_PAYLOAD_MD5": "0cde98e33181ee0ded49e8d0a3178d55",
-		"__X_HTTP_RESULT_INDEX": "23"
+		"__X_HTTP_PAYLOAD_MD5": "0cde98e33181ee0ded49e8d0a3178d55"
 	},
 	{
 		"__X_HTTP_TRANSACTION": "response",
+		"__X_HTTP_TRANSACTION_SEQ": 8,
 		"res_version": "1.1",
 		"res_status": "Not Found",
 		"major_version": 1,
@@ -330,11 +330,11 @@
 		"Content-Type": "text/html",
 		"Content-Length": "146",
 		"Connection": "keep-alive",
-		"__X_HTTP_PAYLOAD_MD5": "d627268e0aba817d818b6e2b7e41aa11",
-		"__X_HTTP_RESULT_INDEX": "24"
+		"__X_HTTP_PAYLOAD_MD5": "d627268e0aba817d818b6e2b7e41aa11"
 	},
 	{
 		"__X_HTTP_TRANSACTION": "response",
+		"__X_HTTP_TRANSACTION_SEQ": 9,
 		"res_version": "1.1",
 		"res_status": "Not Found",
 		"major_version": 1,
@@ -345,11 +345,11 @@
 		"Content-Type": "text/html",
 		"Content-Length": "146",
 		"Connection": "keep-alive",
-		"__X_HTTP_PAYLOAD_MD5": "e99d9829d50bd94b3497b91011f6e349",
-		"__X_HTTP_RESULT_INDEX": "25"
+		"__X_HTTP_PAYLOAD_MD5": "e99d9829d50bd94b3497b91011f6e349"
 	},
 	{
 		"__X_HTTP_TRANSACTION": "request",
+		"__X_HTTP_TRANSACTION_SEQ": 15,
 		"method": "GET",
 		"uri": "/_vti_pvt/bots.cnf",
 		"req_version": "1.1",
@@ -358,11 +358,11 @@
 		"Host": "116.181.2.152",
 		"User-Agent": "Mozilla/5.0 (compatible; Nmap Scripting Engine; https://nmap.org/book/nse.html)",
 		"Connection": "keep-alive",
-		"__X_HTTP_URL": "116.181.2.152/_vti_pvt/bots.cnf",
-		"__X_HTTP_RESULT_INDEX": "26"
+		"__X_HTTP_URL": "116.181.2.152/_vti_pvt/bots.cnf"
 	},
 	{
 		"__X_HTTP_TRANSACTION": "response",
+		"__X_HTTP_TRANSACTION_SEQ": 10,
 		"res_version": "1.1",
 		"res_status": "Not Found",
 		"major_version": 1,
@@ -373,7 +373,6 @@
 		"Content-Type": "text/html",
 		"Content-Length": "146",
 		"Connection": "keep-alive",
-		"__X_HTTP_PAYLOAD_MD5": "99a813d29c5da4e6f7269be4c1a31c8e",
-		"__X_HTTP_RESULT_INDEX": "27"
+		"__X_HTTP_PAYLOAD_MD5": "99a813d29c5da4e6f7269be4c1a31c8e"
 	}
 ]

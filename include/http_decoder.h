@@ -108,8 +108,15 @@ int http_message_get_request_decompress_body(struct http_message *msg,
 int http_message_get_response_decompress_body(struct http_message *msg,
                                               struct hstring *body);
 
+/**
+ * @retval succeed(0) failed(-1)
+*/
 int http_message_get_url(struct http_message *msg, struct hstring *url);
 
+/**
+ * @retval succeed(>=0) failed(-1)
+*/
+int http_message_get_transaction_seq(struct http_message *msg);
 
 #ifdef __cplusplus
 }

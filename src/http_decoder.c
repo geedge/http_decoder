@@ -856,3 +856,24 @@ int http_message_get_url(struct http_message *msg, struct hstring *url)
 
     return http_half_data_get_url(req_data, url);
 }
+
+int http_message_get_transaction_seq(struct http_message *msg)
+{
+    if (NULL == msg)
+    {
+        return -1;
+    }
+    assert(msg->ref_queue);
+    assert(msg->queue_index < HD_RESULT_QUEUE_LEN);
+    struct http_decoder_half_data *hf_data;
+    if (HTTP_MESSAGE_REQ_LINE == msg->type || HTTP_MESSAGE_REQ_HEADER == msg->type || HTTP_MESSAGE_REQ_BODY == msg->type)
+    {
+        hf_data = msg->ref_queue->array[msg->queue_index].req_data;
+    }
+    else
+    {
+        hf_data = msg->ref_queue->array[msg->queue_index].res_data;
+    }
+    return http_half_data_get_transaction_seq(hf_data);
+    ;
+}

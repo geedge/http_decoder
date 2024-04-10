@@ -1,10 +1,10 @@
 [
     {
-        "__X_HTTP_TUPLE4": "192.168.69.2.34059>192.168.69.1.80",
-        "__X_HTTP_RESULT_INDEX": "0"
+        "__X_HTTP_TUPLE4": "192.168.69.2.34059>192.168.69.1.80"
     },
     {
         "__X_HTTP_TRANSACTION": "request",
+        "__X_HTTP_TRANSACTION_SEQ": 0,
         "method": "GET",
         "uri": "/test/ethereal.html",
         "req_version": "1.1",
@@ -19,11 +19,11 @@
         "Keep-Alive": "300",
         "Connection": "keep-alive",
         "Cookie": "FGNCLIID=05c04axp1yaqynldtcdiwis0ag1",
-        "__X_HTTP_URL": "cerberus/test/ethereal.html",
-        "__X_HTTP_RESULT_INDEX": "1"
+        "__X_HTTP_URL": "cerberus/test/ethereal.html"
     },
     {
         "__X_HTTP_TRANSACTION": "response",
+        "__X_HTTP_TRANSACTION_SEQ": 0,
         "res_version": "1.1",
         "res_status": "OK",
         "major_version": 1,
@@ -39,7 +39,6 @@
         "Content-Length": "92",
         "Connection": "close",
         "Content-Type": "text/html; charset=UTF-8",
-        "__X_HTTP_PAYLOAD_MD5":	"61b9e97f96045587bb55db781f7543ad",
-        "__X_HTTP_RESULT_INDEX": "2"
+        "__X_HTTP_PAYLOAD_MD5": "61b9e97f96045587bb55db781f7543ad"
     }
 ]
