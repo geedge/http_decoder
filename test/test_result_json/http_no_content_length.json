@@ -1,10 +1,10 @@
 [
     {
-        "__X_HTTP_TUPLE4": "10.0.0.1.50384>10.0.0.2.80",
-        "__X_HTTP_RESULT_INDEX": "0"
+        "__X_HTTP_TUPLE4": "10.0.0.1.50384>10.0.0.2.80"
     },
     {
         "__X_HTTP_TRANSACTION": "request",
+        "__X_HTTP_TRANSACTION_SEQ": 0,
         "method": "GET",
         "uri": "/js/xxxxxx.js",
         "req_version": "1.1",
@@ -20,11 +20,11 @@
         "Connection": "keep-alive",
         "Referer": "http://www.xxxxxxxx.com/xxxxxxxxxxxxxxx/xxxxxxxxxxxxxxxx.html",
         "Cookie": "trafic_ranking=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
-        "__X_HTTP_URL": "xxxxxxx.xxxxxx.xx/js/xxxxxx.js",
-        "__X_HTTP_RESULT_INDEX": "1"
+        "__X_HTTP_URL": "xxxxxxx.xxxxxx.xx/js/xxxxxx.js"
     },
     {
         "__X_HTTP_TRANSACTION": "response",
+        "__X_HTTP_TRANSACTION_SEQ": 0,
         "res_version": "1.0",
         "res_status": "OK",
         "major_version": 1,
@@ -40,7 +40,6 @@
         "P3P": "policyref=\"/w3c/p3p.xml\", CP=\"ALL IND DSP COR ADM CONo CUR IVAo IVDo PSA PSD TAI TELo OUR SAMo CNT COM INT NAV ONL PHY PRE PUR UNI\"",
         "Set-Cookie": "trafic_ranking=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx; expires=Sun, 11-Jan-2037 14:00:00 GMT; path=/; domain=.xxxxxx.xx",
         "connection": "close",
-        "__X_HTTP_PAYLOAD_MD5": "9fb54a2726ca3cf54a82804d0e66d08a",
-        "__X_HTTP_RESULT_INDEX": "2"
+        "__X_HTTP_PAYLOAD_MD5": "9fb54a2726ca3cf54a82804d0e66d08a"
     }
 ]

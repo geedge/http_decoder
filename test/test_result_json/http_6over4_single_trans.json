@@ -1,10 +1,10 @@
 [
 	{
-		"__X_HTTP_TUPLE4": "2001:da8:200:900e:200:5efe:d24d:58a3.52556>2600:140e:6::1702:1058.80",
-		"__X_HTTP_RESULT_INDEX": "0"
+		"__X_HTTP_TUPLE4": "2001:da8:200:900e:200:5efe:d24d:58a3.52556>2600:140e:6::1702:1058.80"
 	},
 	{
 		"__X_HTTP_TRANSACTION": "request",
+		"__X_HTTP_TRANSACTION_SEQ": 0,
 		"method": "GET",
 		"uri": "/ncsi.txt",
 		"req_version": "1.1",
@@ -13,11 +13,11 @@
 		"Connection": "Close",
 		"User-Agent": "Microsoft NCSI",
 		"Host": "www.msftncsi.com",
-		"__X_HTTP_URL": "www.msftncsi.com/ncsi.txt",
-		"__X_HTTP_RESULT_INDEX": "1"
+		"__X_HTTP_URL": "www.msftncsi.com/ncsi.txt"
 	},
 	{
 		"__X_HTTP_TRANSACTION": "response",
+		"__X_HTTP_TRANSACTION_SEQ": 0,
 		"res_version": "1.1",
 		"res_status": "OK",
 		"major_version": 1,
@@ -28,7 +28,7 @@
 		"Connection": "close",
 		"Content-Type": "text/plain",
 		"Cache-Control": "max-age=30, must-revalidate",
-		"__X_HTTP_PAYLOAD_MD5":	"cd5a4d3fdd5bffc16bf959ef75cf37bc",
-		"__X_HTTP_RESULT_INDEX": "2"
+		"__X_HTTP_PAYLOAD_MD5": "cd5a4d3fdd5bffc16bf959ef75cf37bc",
+		"__X_HTTP_PAYLOAD": "TWljcm9zb2Z0IE5DU0k="
 	}
 ]

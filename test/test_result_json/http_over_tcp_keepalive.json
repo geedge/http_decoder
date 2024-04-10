@@ -1,10 +1,10 @@
 [
 	{
-		"__X_HTTP_TUPLE4": "192.168.56.66.55356>60.190.243.167.80",
-		"__X_HTTP_RESULT_INDEX": "0"
+		"__X_HTTP_TUPLE4": "192.168.56.66.55356>60.190.243.167.80"
 	},
 	{
 		"__X_HTTP_TRANSACTION": "request",
+		"__X_HTTP_TRANSACTION_SEQ": 0,
 		"method": "GET",
 		"uri": "/",
 		"req_version": "1.1",
@@ -19,11 +19,11 @@
 		"Accept-Encoding": "gzip, deflate",
 		"Accept-Language": "zh-CN,zh;q=0.9",
 		"Cookie": "UM_distinctid=17d37645f9c1a1-0281befa480414-b7a1a38-144000-17d37645f9d336; CNZZDATA1258295942=1778021578-1637307701-%7C1637307701; Hm_lvt_a6dc86f6e27435039966e994bd7f0792=1637311872; yumi_sid=JaMlFyTA07ikpZjTHZsRTWyGdMqFyFy%2B4hXGj%2FSoQRJYbrfBUQuOTIMZ8jUGmugDC594AYcbeRhg75xidhRxCW4zq9Y0gPwTmkhq4LQuprp4DrtDMLI3L5wLMqkG%2FuAX1aVFPfud5GRNxNFTSp%2Bos%2FKhfCFKhfN5%2BuT2xyVYSAjy2ftiSOGDi7FN13icuuyPhFCoWqOxWVu1CZ3AiYPJssv6kXqiR6paf75icdeROZY2bkFCDKkcIQcPy7o9EKpkL1Mbimeb40JMg9hUsWdmyhDkzVjSHJmC4z2ujpzSDTsjRIQOnxTy1PHZi%2FMwg3uyGLCusDwqbagpO4pcgEJ5ONDy%2BGwO7FmHXU3mFfR56c9HxxiiuLPnBt9ErpqqWKsxH6lUrlHaUp6AzyrgX7PFdksiMfPSk6%2F3%2FWOYr%2FkYuI4fopw7z8%2FLhxC9AiLr9Czz3MngFUGzkmaMVvAhZOSPzg%3D%3D; Hm_lpvt_a6dc86f6e27435039966e994bd7f0792=1637313847",
-		"__X_HTTP_URL": "www.yumi.com/",
-		"__X_HTTP_RESULT_INDEX": "1"
+		"__X_HTTP_URL": "www.yumi.com/"
 	},
 	{
 		"__X_HTTP_TRANSACTION": "response",
+		"__X_HTTP_TRANSACTION_SEQ": 0,
 		"res_version": "1.1",
 		"res_status": "OK",
 		"major_version": 1,
@@ -39,7 +39,6 @@
 		"Pragma": "no-cache",
 		"Cache-Control": "no-store",
 		"Content-Encoding": "gzip",
-		"__X_HTTP_PAYLOAD_MD5": "af9b1a0118edd2920db355f9eee4ab75",
-		"__X_HTTP_RESULT_INDEX": "2"
+		"__X_HTTP_PAYLOAD_MD5": "af9b1a0118edd2920db355f9eee4ab75"
 	}
 ]

@@ -111,6 +111,7 @@ int http_decoder_join_url_finally(struct http_event_context *ev_ctx,
                                    struct http_decoder_half_data *hfdata,
                                    nmx_pool_t *mempool);
 int http_half_data_get_url(struct http_decoder_half_data *res_data, struct hstring *url);
+int http_half_data_get_transaction_seq(struct http_decoder_half_data *hf_data);
 
 #ifdef __cplusplus
 }

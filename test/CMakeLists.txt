@@ -12,7 +12,7 @@ include_directories(/usr/local/include/cjson)
 include_directories(/opt/tsg/framework/include/stellar)
 include_directories(/opt/MESA/include/MESA)
 
-add_executable(gtest_http_decoder http_decoder_driver.cpp http_decoder_stub.cpp http_decoder_gtest.cpp md5.c)
+add_executable(gtest_http_decoder http_decoder_driver.cpp http_decoder_stub.cpp http_decoder_gtest.cpp md5.c base64.c)
 link_directories(${CMAKE_BINARY_DIR}/src)
 target_link_libraries(gtest_http_decoder http_decoder gtest pcap MESA_jump_layer cjson-static)
 
