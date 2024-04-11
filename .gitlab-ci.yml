@@ -3,11 +3,11 @@ variables:
   BUILD_PADDING_PREFIX: /tmp/padding_for_CPACK_RPM_BUILD_SOURCE_DIRS_PREFIX_PREFIX_PREFIX_PREFIX_PREFIX_PREFIX/
   BUILD_IMAGE_CENTOS7: "git.mesalab.cn:7443/mesa_platform/build-env:master"
   BUILD_IMAGE_CENTOS8: "git.mesalab.cn:7443/mesa_platform/build-env:rockylinux"
-  INSTALL_DEPENDENCY_LIBRARY: sapp-devel framework_env libMESA_prof_load-devel libasan
+  INSTALL_DEPENDENCY_LIBRARY: sapp sapp-devel framework_env libMESA_prof_load-devel libasan
                               libMESA_htable-devel libMESA_jump_layer libMESA_jump_layer-devel
                               libMESA_handle_logger-devel libMESA_field_stat2-devel
                               libfieldstat3-devel libfieldstat4-devel libbreakpad_mini-devel
-                              zlib-devel brotli brotli-devel stellar-c-devel 
+                              zlib-devel brotli brotli-devel stellar-c-devel stellar-c systemd-devel
   SYMBOL_TARGET: http_decoder
   TEST_NAME: gtest_http_decoder
   INSTALL_PREFIX: "/opt/tsg/"
@@ -26,6 +26,9 @@ stages:
     - yum makecache #--disablerepo="*" --enablerepo="framework,platform,protocol,stellar"
     - yum install -y $INSTALL_DEPENDENCY_LIBRARY
     - source /etc/profile.d/framework.sh 
+    - export LIBRARY_PATH=/home/mesasoft/sapp_run/lib/:$LIBRARY_PATH
+    - export LD_LIBRARY_PATH=/home/mesasoft/sapp_run/lib/:$LD_LIBRARY_PATH
+    - ldconfig
 ###############################################################################
 # cppcheck 
 ###############################################################################

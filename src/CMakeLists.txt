@@ -1,6 +1,7 @@
 add_definitions(-fPIC)
 
 include_directories(/opt/MESA/include/)
+include_directories(/opt/tsg/framework/include/)
 include_directories(${PROJECT_SOURCE_DIR}/deps/)
 
 aux_source_directory(${PROJECT_SOURCE_DIR}/deps/mempool DEPS_SRC)

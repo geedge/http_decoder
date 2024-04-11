@@ -268,9 +268,14 @@ static void http_decoder_test_update_session_tuple4(struct session *sess, struct
 {
     if (gtest_plug_exdata->result_jnode[HTTP_TRANSACTION_SESSION] == NULL)
     {
+        const char *human_addr_cstr = session_get0_readable_addr(sess);
+        if(NULL == human_addr_cstr){
+            fprintf(stderr, "can't get readable_addr, to use session_get0_readable_addr() the sapp_log.conf level must <= INFO\n");
+            return;
+        }
         char result_name[MAX_KEY_STR_LEN] = {0};
         gtest_plug_exdata->result_jnode[HTTP_TRANSACTION_SESSION] = cJSON_CreateObject();
-        cJSON_AddStringToObject(gtest_plug_exdata->result_jnode[HTTP_TRANSACTION_SESSION], GTEST_HTTP_TUPLE4_NAME, session_get0_readable_addr(sess));
+        cJSON_AddStringToObject(gtest_plug_exdata->result_jnode[HTTP_TRANSACTION_SESSION], GTEST_HTTP_TUPLE4_NAME, human_addr_cstr);
         sprintf(result_name, "%d", g_result_count++);
         commit_test_result_json(gtest_plug_exdata->result_jnode[HTTP_TRANSACTION_SESSION], result_name);
     }
