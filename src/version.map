@@ -4,6 +4,7 @@ global:
         http_message_*;
 		http_decoder_init;
 		http_decoder_entry;
+		http_decoder_exit;
 	};
 local: *;
 };

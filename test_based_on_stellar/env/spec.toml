@@ -1,5 +1,3 @@
-# stellar_plugin.toml
-#
 [[plugin]]
 path = "./stellar_plugin/http_decoder.so"
 init = "http_decoder_init"

@@ -84,6 +84,7 @@ add_subdirectory(src)
 
 enable_testing()
 add_subdirectory(test)
+add_subdirectory(test_based_on_stellar)
 
 set(CPACK_RPM_LIBRARIES_USER_FILELIST "%config(noreplace) ${CMAKE_INSTALL_PREFIX}/sapp/etc/http/http_decoder.toml")
 

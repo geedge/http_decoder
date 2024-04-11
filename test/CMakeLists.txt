@@ -1,15 +1,16 @@
 set(DECODER_NAME http_decoder)
 
-add_library(${DECODER_NAME}_test SHARED http_decoder_gtest.cpp)
+add_library(${DECODER_NAME}_test SHARED http_decoder_gtest.cpp md5.c)
 add_dependencies(${DECODER_NAME}_test ${DECODER_NAME})
-target_link_libraries(${DECODER_NAME}_test MESA_prof_load)
-set_target_properties(${DECODER_NAME}_test  PROPERTIES PREFIX "")
+target_link_libraries(${DECODER_NAME}_test MESA_prof_load cjson-static)
+set_target_properties(${DECODER_NAME}_test PROPERTIES PREFIX "")
 
 set(TEST_RUN_DIR ${CMAKE_BINARY_DIR}/testing)
 
 include_directories(${CMAKE_SOURCE_DIR}/include)
 include_directories(/usr/local/include/cjson)
 include_directories(/opt/tsg/framework/include/stellar)
+include_directories(/opt/tsg/framework/include/)
 include_directories(/opt/MESA/include/MESA)
 
 add_executable(gtest_http_decoder http_decoder_driver.cpp http_decoder_stub.cpp http_decoder_gtest.cpp md5.c base64.c)
