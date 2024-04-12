@@ -710,9 +710,8 @@ void *http_decoder_init(struct stellar *st)
         goto failed;
     }
 
-    printf("http_decoder_init: ex_data_idx:%d, plugin_id:%d, topic_id:%d\n",
-           ctx->ex_data_idx, ctx->plugin_id, ctx->topic_id);
-
+    // printf("http_decoder_init: ex_data_idx:%d, plugin_id:%d, topic_id:%d\n",
+    //        ctx->ex_data_idx, ctx->plugin_id, ctx->topic_id);
     return ctx;
 
 failed:

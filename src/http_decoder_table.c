@@ -487,7 +487,7 @@ int http_decoder_table_iter_header(struct http_decoder_table *table,
     }
 
     if (table->header_iter >= table->header_cnt) {
-        return 0;
+        return -1;
     }
 
     struct http_decoder_header *tmp_header = &table->headers[table->header_iter];
@@ -498,8 +498,7 @@ int http_decoder_table_iter_header(struct http_decoder_table *table,
             http_decoder_string_get(&tmp_header->key, &hdr->key);
             http_decoder_string_get(&tmp_header->val, &hdr->val);
             table->header_iter++;
-
-            return 1;
+            return 0;
         }
     }
 
@@ -509,7 +508,7 @@ int http_decoder_table_iter_header(struct http_decoder_table *table,
     hdr->val.str = NULL;
     hdr->val.str_len = 0;
 
-    return 0;
+    return -1;
 }
 
 int http_decoder_table_reset_header_iter(struct http_decoder_table *table)

@@ -8,6 +8,8 @@
 #include <string.h>
 #include "http_decoder.h"
 
+
+
 #ifdef __cplusplus
 extern "C"
 {
@@ -18,12 +20,13 @@ extern "C"
 #include "stellar.h"
 #include "http_decoder_gtest.h"
 #include "MESA_jump_layer.h"
+extern struct fake_stellar *g_fake_stellar;
 
     static int g_topic_id = -1;
     static msg_free_cb_func *g_msg_free_cb = NULL;
     static void *g_msg_free_cb_arg = NULL;
-
-    extern struct fake_stellar *g_fake_stellar;
+    static on_msg_cb_func *g_topic_sub_cb = NULL;
+    static void *g_topic_sub_cb_arg = NULL;
 
     int commit_test_result_json(cJSON *node, const char *name)
     {
@@ -185,8 +188,7 @@ extern "C"
     extern int http_decoder_test_entry(struct session *sess, int topic_id, const void *data, void *cb_arg);
     int session_mq_publish_message(struct session *sess, int topic_id, void *data)
     {
-        http_decoder_test_entry(sess, topic_id, data, NULL);
-
+        g_topic_sub_cb(sess, topic_id, data, g_topic_sub_cb_arg);
         g_msg_free_cb(data, g_msg_free_cb_arg);
         return 0;
     }
@@ -217,7 +219,7 @@ extern "C"
         }
 
         int submit_len = MIN(fses->tcp_mss, fpkt->payload_data_len - fpkt->payload_submit_offset);
-        if(submit_len <= 0)
+        if (submit_len <= 0)
         {
             *payload_len = 0;
             return NULL;
@@ -241,7 +243,9 @@ extern "C"
 
     int session_mq_subscribe_topic(struct stellar *st, int topic_id, on_msg_cb_func *sub_cb, void *cb_arg)
     {
-        // to do
+        //todo, support multiple topic?
+        g_topic_sub_cb = sub_cb;
+        g_topic_sub_cb_arg = cb_arg;
         return 0;
     }
 

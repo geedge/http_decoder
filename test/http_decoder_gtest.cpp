@@ -28,6 +28,8 @@ extern "C"
 #include "stellar/session_mq.h"
 #include "md5.h"
     int commit_test_result_json(cJSON *node, const char *name);
+    extern int http_decoder_test_entry(struct session *sess, int topic_id, const void *data,void *cb_arg);
+    static HTTP_DECODER_PLUG_ENTRY_FUN_T g_entry_fun = http_decoder_test_entry;
 }
 #endif
 
@@ -51,6 +53,8 @@ static int g_result_count = 0;
 static int g_header_count = 1;
 static int g_exdata_idx = 0;
 static int g_topic_id = 0;
+
+
 
 #if 0
 void output_http_req_line(struct http_request_line *req_line)
@@ -318,7 +322,7 @@ http_decoder_test_entry(struct session *sess, int topic_id, const void *data,
         req_line_to_json(gtest_plug_exdata->result_jnode[HTTP_TRANSACTION_REQ], &req_line);
         break;
     case HTTP_MESSAGE_REQ_HEADER:
-        while (http_message_header_next(msg, &header) > 0)
+        while (http_message_header_next(msg, &header) >= 0)
         {
             http_header_to_json(gtest_plug_exdata->result_jnode[HTTP_TRANSACTION_REQ], &header);
         }
@@ -338,7 +342,7 @@ http_decoder_test_entry(struct session *sess, int topic_id, const void *data,
         res_line_to_json(gtest_plug_exdata->result_jnode[HTTP_TRANSACTION_RES], &res_line);
         break;
     case HTTP_MESSAGE_RES_HEADER:
-        while (http_message_header_next(msg, &header) > 0)
+        while (http_message_header_next(msg, &header) >= 0)
         {
             http_header_to_json(gtest_plug_exdata->result_jnode[HTTP_TRANSACTION_RES], &header);
         }
@@ -399,8 +403,8 @@ extern "C" void *http_decoder_test_init(struct stellar *st)
         exit(-1);
     }
 
-    session_mq_subscribe_topic(st, g_topic_id, http_decoder_test_entry, NULL);
-    printf("http_decoder_test_init OK!\n");
+    session_mq_subscribe_topic(st, g_topic_id, g_entry_fun, NULL);
+    // printf("http_decoder_test_init OK!\n");
 
     return NULL;
 }
@@ -413,4 +417,9 @@ extern "C" void http_decoder_test_exit(void *test_ctx)
     }
 
     printf("http_decoder_test_exit OK!\n");
+}
+
+extern "C" void http_decoder_plug_set_entry_fuc(HTTP_DECODER_PLUG_ENTRY_FUN_T entry_fun)
+{
+    g_entry_fun = entry_fun;
 }
