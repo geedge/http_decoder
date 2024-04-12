@@ -65,12 +65,11 @@ int http_decoder_table_get_body(struct http_decoder_table *table, struct hstring
 
 int http_decoder_table_get_header(struct http_decoder_table *table,
                                   struct hstring *key,
-                                  struct http_header *hdr_array,
-                                  size_t array_size);
+                                  struct http_header *hdr_res);
 
 int http_decoder_table_iter_header(struct http_decoder_table *table,
                                    struct http_header *hdr);
-
+int http_decoder_table_reset_header_iter(struct http_decoder_table *table);
 /**
  * @brief Is there a parsed header
  * 

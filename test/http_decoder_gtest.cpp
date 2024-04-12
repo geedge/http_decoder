@@ -318,7 +318,7 @@ http_decoder_test_entry(struct session *sess, int topic_id, const void *data,
         req_line_to_json(gtest_plug_exdata->result_jnode[HTTP_TRANSACTION_REQ], &req_line);
         break;
     case HTTP_MESSAGE_REQ_HEADER:
-        while (http_message_request_header_next(msg, &header) > 0)
+        while (http_message_header_next(msg, &header) > 0)
         {
             http_header_to_json(gtest_plug_exdata->result_jnode[HTTP_TRANSACTION_REQ], &header);
         }
@@ -328,7 +328,7 @@ http_decoder_test_entry(struct session *sess, int topic_id, const void *data,
     case HTTP_MESSAGE_REQ_BODY:
         // http_message_get_request_raw_body(msg, &body);
         //  output_http_body(&body, 0);
-        http_message_get_request_decompress_body(msg, &body);
+        http_message_get_decompress_body(msg, &body);
         // output_http_body(&body, 1);
         append_http_payload(sess, gtest_plug_exdata, &body, HTTP_TRANSACTION_REQ);
         break;
@@ -338,7 +338,7 @@ http_decoder_test_entry(struct session *sess, int topic_id, const void *data,
         res_line_to_json(gtest_plug_exdata->result_jnode[HTTP_TRANSACTION_RES], &res_line);
         break;
     case HTTP_MESSAGE_RES_HEADER:
-        while (http_message_response_header_next(msg, &header) > 0)
+        while (http_message_header_next(msg, &header) > 0)
         {
             http_header_to_json(gtest_plug_exdata->result_jnode[HTTP_TRANSACTION_RES], &header);
         }
@@ -347,7 +347,7 @@ http_decoder_test_entry(struct session *sess, int topic_id, const void *data,
     case HTTP_MESSAGE_RES_BODY:
         // http_message_get_response_raw_body(msg, &body);
         //  output_http_body(&body, 0);
-        http_message_get_response_decompress_body(msg, &body);
+        http_message_get_decompress_body(msg, &body);
         // output_http_body(&body, 1);
         append_http_payload(sess, gtest_plug_exdata, &body, HTTP_TRANSACTION_RES);
         break;
