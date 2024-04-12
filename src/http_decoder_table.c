@@ -450,14 +450,13 @@ int http_decoder_table_get_body(struct http_decoder_table *table, struct hstring
 }
 
 int http_decoder_table_get_header(struct http_decoder_table *table, struct hstring *key,
-                                  struct http_header *hdr_array, size_t array_size)
+                                  struct http_header *hdr_result)
 {
-    if (NULL == table || NULL == key->str || 0 == key->str_len) {
-        return 0;
+    if (NULL == table || NULL == key->str || 0 == key->str_len || NULL == hdr_result) {
+        return -1;
     }
 
-    int header_cnt = 0;
-    for (size_t i = 0; i < table->header_cnt && header_cnt < array_size; i++) {
+    for (size_t i = 0; i < table->header_cnt; i++) {
         struct http_decoder_header *tmp_header = &table->headers[i];
         if (tmp_header->key.commit.str_len != key->str_len) {
             continue;
@@ -470,14 +469,14 @@ int http_decoder_table_get_header(struct http_decoder_table *table, struct hstri
 
             if (tmp_key.str_len == key->str_len &&
                 (0 == strncasecmp(tmp_key.str, key->str, key->str_len))) {
-                http_decoder_string_get(&tmp_header->key, &hdr_array[header_cnt].key);
-                http_decoder_string_get(&tmp_header->val, &hdr_array[header_cnt].val);
-                header_cnt++;
+                http_decoder_string_get(&tmp_header->key, &hdr_result->key);
+                http_decoder_string_get(&tmp_header->val, &hdr_result->val);
+                return 0;
             }
         }
     }
 
-    return header_cnt;
+    return -1;
 }
 
 int http_decoder_table_iter_header(struct http_decoder_table *table,
@@ -510,6 +509,12 @@ int http_decoder_table_iter_header(struct http_decoder_table *table,
     hdr->val.str = NULL;
     hdr->val.str_len = 0;
 
+    return 0;
+}
+
+int http_decoder_table_reset_header_iter(struct http_decoder_table *table)
+{
+    table->header_iter = 0;
     return 0;
 }
 
