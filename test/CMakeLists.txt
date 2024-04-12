@@ -13,21 +13,27 @@ include_directories(/opt/tsg/framework/include/stellar)
 include_directories(/opt/tsg/framework/include/)
 include_directories(/opt/MESA/include/MESA)
 
-add_executable(gtest_http_decoder http_decoder_driver.cpp http_decoder_stub.cpp http_decoder_gtest.cpp md5.c base64.c)
+add_executable(gtest_http_decoder http_gtest_main.cpp http_decoder_driver.cpp http_decoder_stub.cpp http_decoder_gtest.cpp md5.c base64.c)
 link_directories(${CMAKE_BINARY_DIR}/src)
 target_link_libraries(gtest_http_decoder http_decoder gtest pcap MESA_jump_layer cjson-static)
+
+add_executable(gtest_unit http_gtest_unit.cpp http_decoder_driver.cpp http_decoder_stub.cpp http_decoder_gtest.cpp md5.c base64.c)
+target_link_libraries(gtest_unit http_decoder gtest pcap MESA_jump_layer cjson-static)
 
 set(TEST_MAIN gtest_http_decoder)
 
 add_test(NAME CREATE_RUN_ENV COMMAND sh -c "mkdir -p ${TEST_RUN_DIR}")
 add_test(NAME COPY_TEST_MAIN COMMAND sh -c "cp ${CMAKE_BINARY_DIR}/test/${TEST_MAIN} ${TEST_RUN_DIR}/${TEST_MAIN}")
+add_test(NAME COPY_TEST_UNIT COMMAND sh -c "cp ${CMAKE_BINARY_DIR}/test/gtest_unit ${TEST_RUN_DIR}/gtest_unit")
 add_test(NAME COPY_HTTP_DECODER_CONF COMMAND sh -c "mkdir -p ${TEST_RUN_DIR}/etc/http && cp ${PROJECT_SOURCE_DIR}/conf/http_decoder.toml ${TEST_RUN_DIR}/etc/http/")
 
 
-set_tests_properties(CREATE_RUN_ENV COPY_TEST_MAIN COPY_HTTP_DECODER_CONF  
+set_tests_properties(CREATE_RUN_ENV COPY_TEST_MAIN COPY_TEST_UNIT COPY_HTTP_DECODER_CONF  
                      PROPERTIES FIXTURES_SETUP TestFixture)
 
 # run tests
+add_test(NAME HTTP_UNIT_TEST COMMAND ./gtest_unit WORKING_DIRECTORY ${TEST_RUN_DIR})
+
 add_test(NAME HTTP_GET_SINGLE_TRANS_TEST COMMAND ${TEST_MAIN} -b ${CMAKE_CURRENT_SOURCE_DIR}/test_result_json/http_get_single_trans.json
          -p ${CMAKE_CURRENT_SOURCE_DIR}/http_pcap/http_get_single_trans.pcap WORKING_DIRECTORY ${TEST_RUN_DIR})
 
@@ -128,8 +134,9 @@ add_test(NAME HTTP_SELF_CONSISTENT_V4_TEST COMMAND ${TEST_MAIN}  -b ${CMAKE_CURR
 add_test(NAME HTTP_SELF_CONSISTENT_V6_TEST COMMAND ${TEST_MAIN}  -b ${CMAKE_CURRENT_SOURCE_DIR}/test_result_json/http_6over4_single_trans.json
         -s ${CMAKE_CURRENT_SOURCE_DIR}/test_result_json/http_6over4_single_trans.json WORKING_DIRECTORY ${TEST_RUN_DIR})
 
-set_tests_properties(HTTP_GET_SINGLE_TRANS_TEST
-                        HTTP_GET_SINGLE_TRANS_MSS1_TEST
+set_tests_properties(HTTP_UNIT_TEST
+                     HTTP_GET_SINGLE_TRANS_TEST
+                     HTTP_GET_SINGLE_TRANS_MSS1_TEST
                      HTTP_GET_MULTI_TRANS_TEST
                      HTTP_GET_LONG_COOKIE_TEST
                      HTTP_GET_ENCODED_URI_TEST

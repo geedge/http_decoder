@@ -30,7 +30,6 @@ extern "C" int http_decoder_entry(struct session *sess, int events,
 extern "C" void http_decoder_test_exit(void *test_ctx);
 extern "C" void *http_decoder_test_init(struct stellar *st);
 extern "C" void *http_decoder_init(struct stellar *st);
-struct fake_stellar *g_fake_stellar; // used for plugin commit_test_result_json()
 
 static const char *hdgt_cla_short_options = "hb:p:s:m:";
 static const struct option hdgt_cla_long_options[] =
@@ -69,11 +68,14 @@ static void hdgt_cmd_usage(int argc, char **argv)
     exit(1);
 }
 
+void hdgt_set_data_source_type(fake_stellar *fst, enum data_source_type_t type)
+{
+    fst->data_source_type = type;
+}
+
 static int hdgt_parse_cmd_args(fake_stellar *fst, int argc, char **argv)
 {
     int c, ret;
-
-    fst->tcp_mss = 1460; // set default value
 
     while (1)
     {
@@ -93,11 +95,11 @@ static int hdgt_parse_cmd_args(fake_stellar *fst, int argc, char **argv)
             fst->benchmark_json_file_name = optarg;
             break;
         case 'p':
-            fst->data_source_type = DATA_SOURCE_PCAP;
+            hdgt_set_data_source_type(fst, DATA_SOURCE_PCAP);
             fst->data_source_file_name = optarg;
             break;
         case 's':
-            fst->data_source_type = DATA_SOURCE_JSON;
+            hdgt_set_data_source_type(fst, DATA_SOURCE_JSON);
             fst->data_source_file_name = optarg;
             break;
         case 'm':
@@ -115,12 +117,12 @@ static int hdgt_parse_cmd_args(fake_stellar *fst, int argc, char **argv)
     }
 
     // check args
-    if (!fst->benchmark_json_file_name)
-    {
-        DEBUG_PRINT("benchmark json file is not set!\n");
-        hdgt_cmd_usage(argc, argv);
-        return -1;
-    }
+    // if (!fst->benchmark_json_file_name)
+    // {
+    //     DEBUG_PRINT("benchmark json file is not set!\n");
+    //     hdgt_cmd_usage(argc, argv);
+    //     return -1;
+    // }
 
     if (__DATA_SOURCE_NULL == fst->data_source_type)
     {
@@ -132,7 +134,7 @@ static int hdgt_parse_cmd_args(fake_stellar *fst, int argc, char **argv)
     return ret;
 }
 
-static int hdgt_compare_result(struct fake_stellar *fst)
+int hdgt_compare_result(struct fake_stellar *fst)
 {
     int final_result = 0;
     cJSON_bool case_sensitive = FLASE;
@@ -441,7 +443,7 @@ static int hdgt_get_packet(struct fake_stellar *fst, struct fake_packet *fpkt)
     }
     else
     {
-        DEBUG_PRINT("Invalid data source type!\n");
+        fprintf(stderr, "hdgt_get_packet(): invalid data source type!\n");
         ret = -1;
     }
 
@@ -762,7 +764,34 @@ static void hdgt_session_update(struct fake_stellar *fst, struct fake_session *f
     fst->http_decoder_entry((struct session *)fses, event, (struct packet *)fses->fpkt, fst->http_decoder_ctx);
 }
 
-static int hdgt_data_source_init(struct fake_stellar *fst)
+int hdgt_data_source_init_by_json_text(struct fake_stellar *fst, const char *json_cont)
+{
+    fst->data_src_json_para.json_root = cJSON_Parse(json_cont);
+    if (NULL == fst->data_src_json_para.json_root)
+    {
+        fprintf(stderr, "cJSON_Parse() %s fail!\n", json_cont);
+        return -1;
+    }
+    fst->data_src_json_para.json_array_size = cJSON_GetArraySize(fst->data_src_json_para.json_root);
+    fst->data_src_json_para.current_json_array_idx = 0;
+    return 0;
+}
+
+int hdgt_data_source_init_by_json_file(struct fake_stellar *fst, const char *json_file)
+{
+    char *file_cont = hdgt_get_file_content(json_file);
+    int ret;
+    if (NULL == file_cont)
+    {
+        fprintf(stderr, "Open json file fail: %s\n", json_file);
+        return -1;
+    }
+    ret = hdgt_data_source_init_by_json_text(fst, file_cont);
+    MFREE(file_cont);
+    return ret;
+}
+
+int hdgt_data_source_init(struct fake_stellar *fst)
 {
     if (DATA_SOURCE_PCAP == fst->data_source_type)
     {
@@ -776,22 +805,7 @@ static int hdgt_data_source_init(struct fake_stellar *fst)
     }
     else if (DATA_SOURCE_JSON == fst->data_source_type)
     {
-        char *file_cont = hdgt_get_file_content(fst->data_source_file_name);
-        if (NULL == file_cont)
-        {
-            fprintf(stderr, "Open json file fail: %s\n", fst->data_source_file_name);
-            return -1;
-        }
-        fst->data_src_json_para.json_root = cJSON_Parse(file_cont);
-        if (NULL == fst->data_src_json_para.json_root)
-        {
-            fprintf(stderr, "cJSON_Parse() %s fail!\n", fst->data_source_file_name);
-            MFREE(file_cont);
-            return -1;
-        }
-        fst->data_src_json_para.json_array_size = cJSON_GetArraySize(fst->data_src_json_para.json_root);
-        fst->data_src_json_para.current_json_array_idx = 0;
-        MFREE(file_cont);
+        return hdgt_data_source_init_by_json_file(fst, fst->data_source_file_name);
     }
     else
     {
@@ -835,24 +849,31 @@ static int hdgt_benchmakr_json_parse(struct fake_stellar *fst)
     return 0;
 }
 
-static int hdgt_under_test_module_init(struct fake_stellar *fst)
+int hdgt_under_test_module_init(struct fake_stellar *fst, HTTP_DECODER_INIT_FUN_T init_fun, HTTP_DECODER_ENTRY_FUN_T entry_fun)
 {
-    fst->http_decoder_ctx = http_decoder_init((struct stellar *)fst);
-    fst->http_decoder_entry = http_decoder_entry;
-
+    fst->http_decoder_ctx = init_fun((struct stellar *)fst);
+    fst->http_decoder_entry = entry_fun;
     return 0;
 }
 
-static int hdgt_test_plug_init(struct fake_stellar *fst)
+int hdgt_test_plug_init(struct fake_stellar *fst, HTTP_DECODER_INIT_FUN_T init_fun, HTTP_DECODER_PLUG_ENTRY_FUN_T entry_fun)
 {
-    fst->http_http_plug_ctx = http_decoder_test_init((struct stellar *)fst);
+    http_decoder_plug_set_entry_fuc(entry_fun);
+    fst->http_http_plug_ctx = init_fun((struct stellar *)fst);
     return 0;
 }
 
-static struct fake_stellar *hdgt_init(int argc, char **argv)
+struct fake_stellar *hdgt_create(void)
 {
     struct fake_stellar *fst = MMALLOC(struct fake_stellar, sizeof(struct fake_stellar));
+    fst->tcp_mss = 1460; // set default value
+    return fst;
+}
 
+int hdgt_init_once(struct fake_stellar *fst, int argc, char **argv, 
+                  HTTP_DECODER_INIT_FUN_T hd_init_fun, HTTP_DECODER_ENTRY_FUN_T hd_entry_fun,
+                  HTTP_DECODER_INIT_FUN_T hd_plug_init_fun, HTTP_DECODER_PLUG_ENTRY_FUN_T hd_plug_entry_fun)
+{
     if (hdgt_parse_cmd_args(fst, argc, argv) < 0)
     {
         fprintf(stderr, "hdgt_parse_cmd_args() fail!\n");
@@ -868,26 +889,24 @@ static struct fake_stellar *hdgt_init(int argc, char **argv)
         fprintf(stderr, "hdgt_benchmakr_json_parse() fail!\n");
         goto fail_exit;
     }
-    if (hdgt_under_test_module_init(fst) < 0)
+    if (hdgt_under_test_module_init(fst, hd_init_fun, hd_entry_fun) < 0)
     {
         fprintf(stderr, "hdgt_under_test_module_init() fail!\n");
         goto fail_exit;
     }
-    if (hdgt_test_plug_init(fst) < 0)
+    if (hdgt_test_plug_init(fst, hd_plug_init_fun, hd_plug_entry_fun) < 0)
     {
         fprintf(stderr, "hdgt_test_plug_init() fail!\n");
         goto fail_exit;
     }
 
-    g_fake_stellar = fst;
-    return fst;
+    return 0;
 
 fail_exit:
-    MFREE(fst);
-    return NULL;
+    return -1;
 }
 
-static void hdgt_exit(struct fake_stellar *fst)
+void hdgt_destroy(struct fake_stellar *fst)
 {
     cJSON_free(fst->load_benchmark_json_root);
     cJSON_free(fst->http_plug_test_result_root);
@@ -929,7 +948,7 @@ static void hdgt_session_free(struct fake_session *fses)
     MFREE(fses);
 }
 
-static void hdgt_main_loop(struct fake_stellar *fst)
+void hdgt_main_loop(struct fake_stellar *fst)
 {
     struct fake_packet __null_pkt = {};
     struct fake_packet fpkt = {};
@@ -959,28 +978,4 @@ static void hdgt_main_loop(struct fake_stellar *fst)
     hdgt_session_update(fst, fses, SESS_EV_CLOSING);
 
     hdgt_session_free(fses);
-}
-
-TEST(HTTP_DECODER, GTEST)
-{
-    ASSERT_EQ(0, hdgt_compare_result(g_fake_stellar));
-}
-
-int main(int argc, char **argv)
-{
-    struct fake_stellar *fake_st = hdgt_init(argc, argv);
-    if (NULL == fake_st)
-    {
-        fprintf(stderr, "hdgt_init() fail!\n");
-        exit(1);
-    }
-
-    hdgt_main_loop(fake_st);
-
-    ::testing::InitGoogleTest(&argc, argv);
-    int ret = RUN_ALL_TESTS();
-
-    hdgt_exit(fake_st);
-
-    return ret;
 }

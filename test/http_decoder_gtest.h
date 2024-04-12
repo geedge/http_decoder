@@ -110,3 +110,19 @@ struct fake_session
     char *readable_addr_cstr;
     void *plug_exdata_array[EX_DATA_MAX_SIZE];
 };
+
+typedef void *(*HTTP_DECODER_INIT_FUN_T)(struct stellar *st);
+typedef int (*HTTP_DECODER_ENTRY_FUN_T)(struct session *sess, int events, const struct packet *pkt, void *cb_arg);
+typedef int (*HTTP_DECODER_PLUG_ENTRY_FUN_T)(struct session *sess, int topic_id, const void *data, void *cb_arg);
+extern struct fake_stellar *hdgt_create(void);
+extern int hdgt_init_once(struct fake_stellar *fst, int argc, char **argv, 
+                  HTTP_DECODER_INIT_FUN_T hd_init_fun, HTTP_DECODER_ENTRY_FUN_T hd_entry_fun,
+                  HTTP_DECODER_INIT_FUN_T hd_plug_init_fun, HTTP_DECODER_PLUG_ENTRY_FUN_T hd_plug_entry_fun);
+extern int hdgt_data_source_init_by_json_text(struct fake_stellar *fst, const char *json_cont);
+int hdgt_under_test_module_init(struct fake_stellar *fst, HTTP_DECODER_INIT_FUN_T init_fun, HTTP_DECODER_ENTRY_FUN_T entry_fun);
+int hdgt_test_plug_init(struct fake_stellar *fst, HTTP_DECODER_INIT_FUN_T init_fun, HTTP_DECODER_PLUG_ENTRY_FUN_T entry_fun);
+extern void hdgt_main_loop(struct fake_stellar *fst);
+extern void hdgt_destroy(struct fake_stellar *fst);
+extern int hdgt_compare_result(struct fake_stellar *fst);
+extern void hdgt_set_data_source_type(fake_stellar *fst, enum data_source_type_t type);
+extern "C" void http_decoder_plug_set_entry_fuc(HTTP_DECODER_PLUG_ENTRY_FUN_T entry_fun);
