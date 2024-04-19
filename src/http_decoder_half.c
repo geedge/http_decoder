@@ -58,6 +58,9 @@ struct http_decoder_half
     long long trans_counter;
     long long err_counter;
     long long transaction_seq;
+
+    const char *data;
+    int data_len;
 };
 
 // #define HTTP_DECODER_DEBUG
@@ -202,6 +205,17 @@ static int on_reset(llhttp_t *http)
     return 0;
 }
 
+static inline int is_line_eof(struct http_decoder_half *half)
+{
+    const char *chr_r = memrchr(half->data, '\r', half->data_len);
+    const char *chr_n = memrchr(half->data, '\n', half->data_len);
+    if (chr_r && chr_n && (chr_r + 1 == chr_n))
+    {
+        return 1;
+    }
+    return 0;
+}
+
 static int on_method(llhttp_t *http, const char *at, size_t length)
 {
     printf_debug_info("on_method", at, length);
@@ -224,8 +238,7 @@ static int on_method_complete(llhttp_t *http)
         container_of(http, struct http_decoder_half, parser);
     assert(half);
 
-    if (http_decoder_table_state(half->ref_data->table, HTTP_ITEM_METHOD) ==
-        STRING_STATE_REFER)
+    if (is_line_eof(half) == 0)
     {
         http_decoder_table_cache(half->ref_data->table, HTTP_ITEM_METHOD);
     }
@@ -278,8 +291,7 @@ static int on_uri_complete(llhttp_t *http)
         container_of(http, struct http_decoder_half, parser);
     assert(half);
 
-    if (http_decoder_table_state(half->ref_data->table, HTTP_ITEM_URI) ==
-        STRING_STATE_REFER)
+    if (is_line_eof(half) == 0)
     {
         http_decoder_table_cache(half->ref_data->table, HTTP_ITEM_URI);
     }
@@ -317,8 +329,7 @@ static int on_version_complete(llhttp_t *http)
         container_of(http, struct http_decoder_half, parser);
     assert(half);
 
-    if (http_decoder_table_state(half->ref_data->table, HTTP_ITEM_VERSION) ==
-        STRING_STATE_REFER)
+    if (is_line_eof(half) == 0)
     {
         http_decoder_table_cache(half->ref_data->table, HTTP_ITEM_VERSION);
     }
@@ -363,8 +374,7 @@ static int on_status_complete(llhttp_t *http)
         container_of(http, struct http_decoder_half, parser);
     assert(half);
 
-    if (http_decoder_table_state(half->ref_data->table, HTTP_ITEM_STATUS) ==
-        STRING_STATE_REFER)
+    if (is_line_eof(half) == 0)
     {
         http_decoder_table_cache(half->ref_data->table, HTTP_ITEM_STATUS);
     }
@@ -737,6 +747,8 @@ int http_decoder_half_parse(struct http_decoder_half *half, const char *data,
         return -1;
     }
 
+    half->data = (const char *)data;
+    half->data_len = data_len;
     half->error = llhttp_execute(&half->parser, data, data_len);
 
     int ret = 0;

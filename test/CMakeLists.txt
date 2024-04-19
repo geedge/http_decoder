@@ -5,6 +5,10 @@ add_dependencies(${DECODER_NAME}_test ${DECODER_NAME})
 target_link_libraries(${DECODER_NAME}_test MESA_prof_load cjson-static)
 set_target_properties(${DECODER_NAME}_test PROPERTIES PREFIX "")
 
+add_library(${DECODER_NAME}_perf SHARED http_decoder_perf.cpp)
+add_dependencies(${DECODER_NAME}_perf ${DECODER_NAME})
+set_target_properties(${DECODER_NAME}_perf PROPERTIES PREFIX "")
+
 set(TEST_RUN_DIR ${CMAKE_BINARY_DIR}/testing)
 
 include_directories(${CMAKE_SOURCE_DIR}/include)
