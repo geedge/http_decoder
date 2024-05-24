@@ -1,21 +1,8 @@
-/*
-**********************************************************************************************
-*	File: http_decoder_string.h
-*   Description: 
-*	Authors: LuWenPeng <luwenpeng@geedgenetworks.com>
-*	Date:    2022-10-31
-*   Copyright: (c) Since 2022 Geedge Networks, Ltd. All rights reserved.
-***********************************************************************************************
-*/
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
-
-#include "stellar/utils.h"
-#include "http_decoder_utils.h"
-#include "http_decoder_string.h"
+#include "http_decoder_inc.h"
 
 static const char *string_state_to_desc(enum string_state state)
 {
@@ -64,7 +51,6 @@ static void string_refer2cache(struct http_decoder_string *rstr)
     if (0 == rstr->refer.str_len) {
         return;
     }
-
     if (rstr->cache.str_len >= rstr->max_cache_size) {
         return;
     }
@@ -84,7 +70,6 @@ static void string_refer2cache(struct http_decoder_string *rstr)
     }
 
     rstr->cache.str_len = length;
-
     rstr->refer.str = NULL;
     rstr->refer.str_len = 0;
 }
@@ -93,7 +78,6 @@ static void string_commit2cache(struct http_decoder_string *rstr)
 {
     if (rstr->cache.str_len == rstr->commit.str_len &&
         rstr->cache.str == rstr->commit.str) {
-
         rstr->commit.str = NULL;
         rstr->commit.str_len = 0;
         return;
@@ -141,7 +125,6 @@ void http_decoder_string_cache(struct http_decoder_string *rstr)
         abort();
         break;
     }
-
     rstr->state = STRING_STATE_CACHE;
 }
 
@@ -226,19 +209,17 @@ void http_decoder_string_reinit(struct http_decoder_string *rstr)
 
     rstr->refer.str = NULL;
     rstr->refer.str_len = 0;
-
     rstr->commit.str = NULL;
     rstr->commit.str_len = 0;
-
     rstr->state = STRING_STATE_INIT;
 }
 
-enum string_state http_decoder_string_state(struct http_decoder_string *rstr)
+enum string_state http_decoder_string_state(const struct http_decoder_string *rstr)
 {
     return rstr->state;
 }
 
-int http_decoder_string_get(struct http_decoder_string *rstr, struct hstring *out)
+int http_decoder_string_get(const struct http_decoder_string *rstr, struct hstring *out)
 {
     if (NULL == rstr || NULL == out) {
         return -1;

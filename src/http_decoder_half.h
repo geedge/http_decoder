@@ -1,28 +1,12 @@
-/*
-**********************************************************************************************
-*	File: http_decoder_half.h
-*   Description: 
-*	Authors: Liu WenTan <liuwentan@geedgenetworks.com>
-*	Date:    2024-01-10
-*   Copyright: (c) Since 2022 Geedge Networks, Ltd. All rights reserved.
-***********************************************************************************************
-*/
-
-
 #ifndef _HTTP_DECODER_HALF_H_
 #define _HTTP_DECODER_HALF_H_
 
-#ifdef __cplusplus
-extern "C"
-{
-#endif
-
 #include <stddef.h>
-
 #include "stellar/session.h"
 #include "http_decoder.h"
 #include "http_content_decompress.h"
 #include "http_decoder_result_queue.h"
+#include "llhttp.h"
 
 // only one http event is fired at a time
 enum http_event {
@@ -59,7 +43,7 @@ typedef void http_event_cb(enum http_event event, struct http_decoder_half_data 
                            struct http_event_context *ev_ctx);
 
 struct http_decoder_half *
-http_decoder_half_new(nmx_pool_t *mempool, http_event_cb *event_cb, int http_type,
+http_decoder_half_new(nmx_pool_t *mempool, http_event_cb *event_cb, enum llhttp_type http_type,
                       int decompress_switch);
 
 void http_decoder_half_free(nmx_pool_t *mempool, struct http_decoder_half *half);
@@ -86,18 +70,18 @@ int http_decoder_half_data_get_request_line(struct http_decoder_half_data *data,
 int http_decoder_half_data_get_response_line(struct http_decoder_half_data *data,
                                              struct http_response_line *line);
 
-int http_decoder_half_data_get_header(struct http_decoder_half_data *data,
-                                      struct hstring *key, struct http_header *hdr_res);
+int http_decoder_half_data_get_header(const struct http_decoder_half_data *data,
+                                      const struct hstring *key, struct http_header *hdr_res);
 
 int http_decoder_half_data_iter_header(struct http_decoder_half_data *data,
                                        struct http_header *header);
 int http_decoder_half_data_reset_header_iter(struct http_decoder_half_data *req_data);
 int http_decoder_half_data_has_parsed_header(struct http_decoder_half_data *data);
 
-int http_decoder_half_data_get_raw_body(struct http_decoder_half_data *data,
+int http_decoder_half_data_get_raw_body(const struct http_decoder_half_data *data,
                                         struct hstring *body);
 
-int http_decoder_half_data_get_decompress_body(struct http_decoder_half_data *data,
+int http_decoder_half_data_get_decompress_body(const struct http_decoder_half_data *data,
                                                struct hstring *body);
 
 void http_decoder_half_data_dump(struct http_decoder_half *half);
@@ -112,8 +96,5 @@ int http_decoder_join_url_finally(struct http_event_context *ev_ctx,
 int http_half_data_get_url(struct http_decoder_half_data *res_data, struct hstring *url);
 int http_half_data_get_transaction_seq(struct http_decoder_half_data *hf_data);
 
-#ifdef __cplusplus
-}
-#endif
-
+void http_half_data_update_commit_index(struct http_decoder_half_data * half_data);
 #endif

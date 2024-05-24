@@ -1,39 +1,39 @@
-/*
-**********************************************************************************************
-*	File: http_decoder_gtest.cpp
-*   Description:
-*	Authors: Liu WenTan <liuwentan@geedgenetworks.com>
-*	Date:    2023-12-15
-*   Copyright: (c) Since 2023 Geedge Networks, Ltd. All rights reserved.
-***********************************************************************************************
-*/
-
 #include <stdio.h>
 #include <time.h>
 #include <unistd.h>
 #include <assert.h>
 #include <string.h>
 
-#include "../include/http_decoder.h"
+#include "http_decoder_inc.h"
 
 #ifdef __cplusplus
 extern "C"
 {
-
 #include "cJSON.h"
 #include "http_decoder_gtest.h"
-#include "stellar/utils.h"
-#include "stellar/stellar.h"
-#include "stellar/session_exdata.h"
-#include "stellar/session_mq.h"
 #include "md5.h"
+#include "toml/toml.h"
+
     int commit_test_result_json(cJSON *node, const char *name);
-    extern int http_decoder_test_entry(struct session *sess, int topic_id, const void *data,void *cb_arg);
-    static HTTP_DECODER_PLUG_ENTRY_FUN_T g_entry_fun = http_decoder_test_entry;
+    extern void http_decoder_test_entry(struct session *sess, int topic_id, const void *raw_msg, void *no_use_ctx, void *plugin_env);
+    extern void http_decoder_test_state_entry(struct session *sess, int topic_id, const void *raw_msg, void *no_use_ctx, void *plugin_env);
+    static on_session_msg_cb_func *g_entry_fun = http_decoder_test_entry;
 }
 #endif
 
 #define MAX_KEY_STR_LEN 2048
+#define GTEST_PLUG_ENTRY_CFG  "./etc/http/gtest_entry.toml"
+
+struct plug_entry_t{
+    const char *name;
+    on_session_msg_cb_func *entry;
+};
+
+static struct plug_entry_t g_entry_tbl[] = {
+    {"http_decoder_test_entry", http_decoder_test_entry},
+    {"http_decoder_test_state_entry", http_decoder_test_state_entry},
+    {NULL, NULL}
+};
 
 enum http_transaction_type
 {
@@ -51,8 +51,9 @@ struct gtest_plug_exdata_t
 
 static int g_result_count = 0;
 static int g_header_count = 1;
-static int g_exdata_idx = 0;
-static int g_topic_id = 0;
+static int g_http_gtest_plugin_id = -1;
+static int g_exdata_idx = -1;
+static int g_topic_id = -1;
 
 
 
@@ -207,7 +208,8 @@ void http_url_add_to_json(cJSON *ctx, struct http_message *msg)
         return;
     }
 
-    if (http_message_get_url(msg, &url_result) < 0)
+    http_message_get_url(msg, &url_result);
+    if(url_result.str == NULL)
     {
         // printf("url:%s\n", url_result.str);
         return;
@@ -224,7 +226,7 @@ void http_url_add_to_json(cJSON *ctx, struct http_message *msg)
 
 // Full duplex
 static void commit_last_half_flow_data(struct session *sess, struct gtest_plug_exdata_t *gtest_plug_exdata,
-                                       struct http_message *msg, enum http_transaction_type type)
+                                       struct http_message *msg, enum http_transaction_type type, int final)
 {
     char result_name[MAX_KEY_STR_LEN] = {0};
 
@@ -253,18 +255,20 @@ static void commit_last_half_flow_data(struct session *sess, struct gtest_plug_e
         g_result_count++;
     }
 
-    gtest_plug_exdata->result_jnode[type] = cJSON_CreateObject();
-    if (HTTP_TRANSACTION_REQ == type)
-    {
-        cJSON_AddStringToObject(gtest_plug_exdata->result_jnode[type], GTEST_HTTP_TRANS_NAME, "request");
-    }
-    else if (HTTP_TRANSACTION_RES == type)
-    {
-        cJSON_AddStringToObject(gtest_plug_exdata->result_jnode[type], GTEST_HTTP_TRANS_NAME, "response");
-    }
-    if (msg)
-    {
-        transaction_index_to_json(gtest_plug_exdata->result_jnode[type], http_message_get_transaction_seq(msg));
+    if(0 == final){
+        gtest_plug_exdata->result_jnode[type] = cJSON_CreateObject();
+        if (HTTP_TRANSACTION_REQ == type)
+        {
+            cJSON_AddStringToObject(gtest_plug_exdata->result_jnode[type], GTEST_HTTP_TRANS_NAME, "request");
+        }
+        else if (HTTP_TRANSACTION_RES == type)
+        {
+            cJSON_AddStringToObject(gtest_plug_exdata->result_jnode[type], GTEST_HTTP_TRANS_NAME, "response");
+        }
+        if (msg)
+        {
+            transaction_index_to_json(gtest_plug_exdata->result_jnode[type], http_message_get_transaction_seq(msg));
+        }
     }
 }
 
@@ -285,25 +289,74 @@ static void http_decoder_test_update_session_tuple4(struct session *sess, struct
     }
 }
 
-extern "C" int
-http_decoder_test_entry(struct session *sess, int topic_id, const void *data,
-                        void *cb_arg)
+static int get_gtest_plug_entry(const char *cfg_path, char *entry_name, int max_len)
+{
+    FILE *fp = fopen(cfg_path, "r");
+    if (NULL == fp)
+    {
+        fprintf(stderr, "[%s:%d]Can't open config file:%s",
+                __FUNCTION__, __LINE__, cfg_path);
+        return -1;
+    }
+
+    int ret = 0;
+    char errbuf[256] = {0};
+
+    toml_table_t *root = toml_parse_file(fp, errbuf, sizeof(errbuf));
+    fclose(fp);
+
+    toml_table_t *basic_sec_tbl = toml_table_in(root, "entry");
+    if (NULL == basic_sec_tbl)
+    {
+        fprintf(stderr, "[%s:%d]config file:%s has no key: [entry]",
+                __FUNCTION__, __LINE__, cfg_path);
+        toml_free(root);
+        return -1;
+    }
+
+    toml_datum_t str_val = toml_string_in(basic_sec_tbl, "name");
+    if (str_val.ok != 0)
+    {
+        strncpy(entry_name, str_val.u.s, max_len);
+        free(str_val.u.s);
+    }
+    toml_free(root);
+    return 0;
+}
+
+static void set_gtest_plug_entry(const char *entry_name)
+{
+    if(NULL == entry_name){
+        g_entry_fun = http_decoder_test_entry; //set default
+        return;
+    }
+    for (size_t i = 0; g_entry_tbl[i].name != NULL; i++)
+    {
+        if(strcmp(entry_name, g_entry_tbl[i].name) == 0){
+            g_entry_fun = g_entry_tbl[i].entry;
+            return;
+        }
+    }
+    g_entry_fun = http_decoder_test_entry; //set default
+}
+
+extern "C" void http_decoder_test_entry(struct session *sess, int topic_id, const void *raw_msg, void *no_use_ctx, void *plugin_env)
 {
     struct http_request_line req_line = {0};
     struct http_response_line res_line = {0};
     struct http_header header = {0};
     struct hstring body = {0};
-    struct http_message *msg = (struct http_message *)data;
-    enum http_message_type msg_type = http_message_type(msg);
+    struct http_message *msg = (struct http_message *)raw_msg;
+    enum http_message_type msg_type = http_message_type_get(msg);
 
-    struct gtest_plug_exdata_t *gtest_plug_exdata = (struct gtest_plug_exdata_t *)session_get_ex_data(sess, g_exdata_idx);
+    struct gtest_plug_exdata_t *gtest_plug_exdata = (struct gtest_plug_exdata_t *)session_exdata_get(sess, g_exdata_idx);
     if (NULL == gtest_plug_exdata)
     {
         gtest_plug_exdata = (struct gtest_plug_exdata_t *)calloc(1, sizeof(struct gtest_plug_exdata_t));
-        session_set_ex_data(sess, g_exdata_idx, gtest_plug_exdata);
+        session_exdata_set(sess, g_exdata_idx, gtest_plug_exdata);
     }
 
-    if (msg_type == HTTP_MESSAGE_REQ_LINE || msg_type == HTTP_MESSAGE_REQ_HEADER || msg_type == HTTP_MESSAGE_REQ_BODY)
+    if (http_message_type_is_req(sess, msg_type))
     {
         cJSON *json = gtest_plug_exdata->result_jnode[HTTP_TRANSACTION_REQ];
     }
@@ -317,7 +370,7 @@ http_decoder_test_entry(struct session *sess, int topic_id, const void *data,
     switch (msg_type)
     {
     case HTTP_MESSAGE_REQ_LINE:
-        commit_last_half_flow_data(sess, gtest_plug_exdata, msg, HTTP_TRANSACTION_REQ);
+        commit_last_half_flow_data(sess, gtest_plug_exdata, msg, HTTP_TRANSACTION_REQ, 0);
         http_message_get_request_line(msg, &req_line);
         req_line_to_json(gtest_plug_exdata->result_jnode[HTTP_TRANSACTION_REQ], &req_line);
         break;
@@ -337,7 +390,7 @@ http_decoder_test_entry(struct session *sess, int topic_id, const void *data,
         append_http_payload(sess, gtest_plug_exdata, &body, HTTP_TRANSACTION_REQ);
         break;
     case HTTP_MESSAGE_RES_LINE:
-        commit_last_half_flow_data(sess, gtest_plug_exdata, msg, HTTP_TRANSACTION_RES);
+        commit_last_half_flow_data(sess, gtest_plug_exdata, msg, HTTP_TRANSACTION_RES, 0);
         http_message_get_response_line(msg, &res_line);
         res_line_to_json(gtest_plug_exdata->result_jnode[HTTP_TRANSACTION_RES], &res_line);
         break;
@@ -361,52 +414,96 @@ http_decoder_test_entry(struct session *sess, int topic_id, const void *data,
         break;
     }
 
-    return 0;
+    return;
 }
 
-void http_decoder_test_exdata_free(struct session *sess, int idx, void *ex_ptr,
-                                   void *arg)
+void http_decoder_test_exdata_free(struct session *sess, int idx, void *ex_ptr, void *arg)
 {
     if (ex_ptr != NULL)
     {
         struct gtest_plug_exdata_t *gtest_plug_exdata = (struct gtest_plug_exdata_t *)ex_ptr;
         if (gtest_plug_exdata->result_jnode[HTTP_TRANSACTION_REQ])
         {
-            commit_last_half_flow_data(sess, gtest_plug_exdata, NULL, HTTP_TRANSACTION_REQ);
+            commit_last_half_flow_data(sess, gtest_plug_exdata, NULL, HTTP_TRANSACTION_REQ, 1);
         }
         if (gtest_plug_exdata->result_jnode[HTTP_TRANSACTION_RES])
         {
-            commit_last_half_flow_data(sess, gtest_plug_exdata, NULL, HTTP_TRANSACTION_RES);
+            commit_last_half_flow_data(sess, gtest_plug_exdata, NULL, HTTP_TRANSACTION_RES, 1);
         }
         free(ex_ptr);
     }
 }
 
+static int update_config_file(const char *filename, const char *key, const char *value)
+{
+	char cmd_buf[1024] = {};
+	snprintf(cmd_buf, 1024, "sed 's/^[ \t]*%s=.*/%s=%s/g' -i %s", key, key, value, filename);
+	int ret = system(cmd_buf);
+	return ret;
+}
+
+extern "C" void http_decoder_test_state_entry(struct session *sess, int topic_id, const void *raw_msg, void *no_use_ctx, void *plugin_env)
+{
+    static int msg_index = 0;
+    char msg_index_name[64] = {};
+    char msg_index_value[64] = {};
+    cJSON *json_object = NULL;
+    enum http_message_type msg_type = http_message_type_get((struct http_message *)raw_msg);
+
+    struct gtest_plug_exdata_t *gtest_plug_exdata = (struct gtest_plug_exdata_t *)session_exdata_get(sess, g_exdata_idx);
+    if (NULL == gtest_plug_exdata)
+    {
+        gtest_plug_exdata = (struct gtest_plug_exdata_t *)calloc(1, sizeof(struct gtest_plug_exdata_t));
+        gtest_plug_exdata->result_jnode[HTTP_TRANSACTION_REQ] = cJSON_CreateObject();
+        gtest_plug_exdata->result_jnode[HTTP_TRANSACTION_RES] = cJSON_CreateObject();
+        session_exdata_set(sess, g_exdata_idx, gtest_plug_exdata);
+    }
+
+    if (http_message_type_is_req(sess, msg_type)){
+        json_object = gtest_plug_exdata->result_jnode[HTTP_TRANSACTION_REQ];
+    }else{
+        json_object = gtest_plug_exdata->result_jnode[HTTP_TRANSACTION_RES];
+    }
+
+    int cur_transaction_id = http_message_get_transaction_seq((const http_message* )raw_msg);
+
+    if(HTTP_TRANSACTION_NEW ==msg_type || HTTP_TRANSACTION_FREE == msg_type){
+        snprintf(msg_index_name, sizeof(msg_index_name), "msg_%d", msg_index++);
+        snprintf(msg_index_value, sizeof(msg_index_value), "%s_transaction_%d", http_message_type_to_string(msg_type), cur_transaction_id);   
+        cJSON_AddStringToObject(json_object, msg_index_name, msg_index_value);   
+    }else{
+        snprintf(msg_index_name, sizeof(msg_index_name), "msg_%d", msg_index++);
+        cJSON_AddStringToObject(json_object, msg_index_name, http_message_type_to_string(msg_type));
+    }
+    return;
+}
+
 extern "C" void *http_decoder_test_init(struct stellar *st)
 {
-    g_exdata_idx =
-        stellar_session_get_ex_new_index(st, "HTTP_DECODER_REQ_TEST",
+    g_http_gtest_plugin_id = stellar_session_plugin_register(st, NULL, NULL, NULL);
+    g_exdata_idx = stellar_session_exdata_new_index(st, "HTTP_DECODER_REQ_TEST",
                                          http_decoder_test_exdata_free,
-                                         NULL);
+                                                NULL);
     if (g_exdata_idx < 0)
     {
-        printf("[%s:%d]: can't get http_decoder exdata index !!!\n",
-               __FUNCTION__, __LINE__);
-        exit(-1);
+        printf("[%s:%d]: can't get http_decoder exdata index !!!\n", __FUNCTION__, __LINE__);
+        return NULL;
     }
 
-    g_topic_id = session_mq_get_topic_id(st, "HTTP_DECODER_MESSAGE");
+    g_topic_id = stellar_session_mq_get_topic_id(st, HTTP_DECODER_TOPIC);
     if (g_topic_id < 0)
     {
-        printf("[%s:%d]: can't get http_decoder topic id !!!\n",
-               __FUNCTION__, __LINE__);
-        exit(-1);
+        printf("[%s:%d]: can't get http_decoder topic id !!!\n", __FUNCTION__, __LINE__);
+        return NULL;
     }
 
-    session_mq_subscribe_topic(st, g_topic_id, g_entry_fun, NULL);
-    // printf("http_decoder_test_init OK!\n");
+    char entry_name[64] = "";
+    get_gtest_plug_entry(GTEST_PLUG_ENTRY_CFG, entry_name, sizeof(entry_name)-1);
+    set_gtest_plug_entry(entry_name);
+    stellar_session_mq_subscribe(st, g_topic_id, g_entry_fun, g_http_gtest_plugin_id);
+    printf("http_decoder_test_init succ, plugin_id:%d, topic_id:%d\n", g_http_gtest_plugin_id, g_topic_id);
 
-    return NULL;
+    return (void *)strdup("http_decoder_test_ctx");
 }
 
 extern "C" void http_decoder_test_exit(void *test_ctx)
@@ -415,11 +512,6 @@ extern "C" void http_decoder_test_exit(void *test_ctx)
     {
         FREE(test_ctx);
     }
-
+    // update_config_file(GTEST_PLUG_ENTRY_CFG, "name", "\\x22http_decoder_test_entry\\x22");
     printf("http_decoder_test_exit OK!\n");
-}
-
-extern "C" void http_decoder_plug_set_entry_fuc(HTTP_DECODER_PLUG_ENTRY_FUN_T entry_fun)
-{
-    g_entry_fun = entry_fun;
 }

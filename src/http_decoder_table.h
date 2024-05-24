@@ -1,23 +1,6 @@
-/*
-**********************************************************************************************
-*	File: http_decoder_table.h
-*   Description:
-*	Authors: LuWenPeng <luwenpeng@geedgenetworks.com>
-*	Date:    2022-10-31
-*   Copyright: (c) Since 2022 Geedge Networks, Ltd. All rights reserved.
-***********************************************************************************************
-*/
-
-
 #ifndef _HTTP_DECODER_TABLE_H_
 #define _HTTP_DECODER_TABLE_H_
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 #include <stddef.h>
-
 #include "http_decoder.h"
 #include "http_decoder_inc.h"
 #include "http_decoder_string.h"
@@ -53,18 +36,18 @@ void http_decoder_table_reinit(struct http_decoder_table *table);
 
 void http_decoder_table_dump(struct http_decoder_table *table);
 
-int http_decoder_table_get_uri(struct http_decoder_table *table, struct hstring *out);
+int http_decoder_table_get_uri(const struct http_decoder_table *table, struct hstring *out);
 
-int http_decoder_table_get_method(struct http_decoder_table *table, struct hstring *out);
+int http_decoder_table_get_method(const struct http_decoder_table *table, struct hstring *out);
 
-int http_decoder_table_get_status(struct http_decoder_table *table, struct hstring *out);
+int http_decoder_table_get_status(const struct http_decoder_table *table, struct hstring *out);
 
-int http_decoder_table_get_version(struct http_decoder_table *table, struct hstring *out);
+int http_decoder_table_get_version(const struct http_decoder_table *table, struct hstring *out);
 
-int http_decoder_table_get_body(struct http_decoder_table *table, struct hstring *out);
+int http_decoder_table_get_body(const struct http_decoder_table *table, struct hstring *out);
 
-int http_decoder_table_get_header(struct http_decoder_table *table,
-                                  struct hstring *key,
+int http_decoder_table_get_header(const struct http_decoder_table *table,
+                                  const struct hstring *key,
                                   struct http_header *hdr_res);
 
 int http_decoder_table_iter_header(struct http_decoder_table *table,
@@ -91,8 +74,6 @@ void http_decoder_table_set_header_complete(struct http_decoder_table *table);
 
 void http_decoder_table_reset_header_complete(struct http_decoder_table *table);
 
-#ifdef __cplusplus
-}
-#endif
+void http_decoder_table_update_commit_index(struct http_decoder_table *table);
 
 #endif

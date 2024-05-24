@@ -1,28 +1,13 @@
-/*
-**********************************************************************************************
-*	File: http_decoder_utils.h
-*   Description: 
-*	Authors: LuWenPeng <luwenpeng@geedgenetworks.com>
-*	Date:    2022-10-31
-*   Copyright: (c) Since 2022 Geedge Networks, Ltd. All rights reserved.
-***********************************************************************************************
-*/
-
-
 #ifndef _HTTP_DECODER_UTILS_H_
 #define _HTTP_DECODER_UTILS_H_
-
-#ifdef __cplusplus
-extern "C"
-{
-#endif
 
 #include <stdlib.h>
 #include <stdio.h>
 
-
 char *safe_dup(const char *str, size_t len);
-
+const char *http_message_type_to_string(enum http_message_type type);
+int http_message_type_is_req(struct session *sess, enum http_message_type msg_type);
+int http_event_is_req(enum http_event event);
 /******************************************************************************
  * Logger
  ******************************************************************************/
@@ -58,9 +43,4 @@ enum http_decoder_log_level {
         }                                                                        \
     }
 #endif
-
-#ifdef __cplusplus
-}
-#endif
-
 #endif

@@ -56,6 +56,10 @@ else()
   message(FATAL_ERROR "Could not find the program cppcheck.")
 endif()
 
+set(CMAKE_BUILD_TYPE "RelWithDebInfo" CACHE STRING
+    " set CMAKE_BUILD_TYPE chosen by the user, using RelWithDebInfo as default")
+set_property(CACHE CMAKE_BUILD_TYPE  PROPERTY STRINGS Debug Release RelWithDebInfo MinSizeRel)
+
 #ASAN option
 set(ASAN_OPTION "OFF" CACHE STRING
     " set asan type chosen by the user, using OFF as default")

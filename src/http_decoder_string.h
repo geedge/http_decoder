@@ -1,23 +1,7 @@
-/*
-**********************************************************************************************
-*	File: http_decoder_string.h
-*   Description: 
-*	Authors: LuWenPeng <luwenpeng@geedgenetworks.com>
-*	Date:    2022-10-31
-*   Copyright: (c) Since 2022 Geedge Networks, Ltd. All rights reserved.
-***********************************************************************************************
-*/
-
 #ifndef _HTTP_DECODER_STRING_H_
 #define _HTTP_DECODER_STRING_H_
 
-#ifdef __cplusplus
-extern "C"
-{
-#endif
-
 #include "http_decoder.h"
-
 
 enum string_state {
     STRING_STATE_INIT,
@@ -82,14 +66,9 @@ void http_decoder_string_init(struct http_decoder_string *rstr,
 
 void http_decoder_string_reinit(struct http_decoder_string *rstr);
 
-enum string_state http_decoder_string_state(struct http_decoder_string *rstr);
+enum string_state http_decoder_string_state(const struct http_decoder_string *rstr);
 
-int http_decoder_string_get(struct http_decoder_string *rstr, struct hstring *out);
+int http_decoder_string_get(const struct http_decoder_string *rstr, struct hstring *out);
 
 void http_decoder_string_dump(struct http_decoder_string *rstr, const char *desc);
-
-#ifdef __cplusplus
-}
-#endif
-
 #endif
