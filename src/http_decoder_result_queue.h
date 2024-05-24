@@ -7,18 +7,10 @@
 *   Copyright: (c) Since 2022 Geedge Networks, Ltd. All rights reserved.
 ***********************************************************************************************
 */
-
-
 #ifndef _HTTP_DECODER_RESULT_QUEUE_H_
 #define _HTTP_DECODER_RESULT_QUEUE_H_
 
-#ifdef __cplusplus
-extern "C"
-{
-#endif
-
 #include <stddef.h>
-
 #include "mempool/nmx_palloc.h"
 #include "http_decoder_half.h"
 
@@ -65,9 +57,5 @@ http_decoder_result_queue_peek_req(struct http_decoder_result_queue *queue);
 
 struct http_decoder_half_data *
 http_decoder_result_queue_peek_res(struct http_decoder_result_queue *queue);
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif

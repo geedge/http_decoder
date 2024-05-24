@@ -3,8 +3,8 @@ global:
 	extern "C" {
         http_message_*;
 		http_decoder_init;
-		http_decoder_entry;
 		http_decoder_exit;
+		http_decoder_tcp_stream_msg_cb;
 	};
 local: *;
 };

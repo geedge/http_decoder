@@ -32,23 +32,25 @@ target_link_libraries(plugin_test_main gtest cjson-static sapp_devel pthread pca
 add_test(NAME STELLAR_INSTALL_TEST_MAIN COMMAND sh -c "cp ${CMAKE_CURRENT_BINARY_DIR}/${TEST_MAIN} ${TEST_RUN_DIR}/${TEST_MAIN}")
 add_test(NAME STELLAR_COPY_SPEC COMMAND sh -c "mkdir -p ${TEST_RUN_DIR}/stellar_plugin/ && cp ${CMAKE_CURRENT_SOURCE_DIR}/env/spec.toml ${TEST_RUN_DIR}/stellar_plugin/spec.toml")
 add_test(NAME STELLAR_COPY_CONFLIST COMMAND sh -c "mkdir -p ${TEST_RUN_DIR}/plug/ && cp ${CMAKE_CURRENT_SOURCE_DIR}/env/conflist.inf ${TEST_RUN_DIR}/plug/conflist.inf")
-add_test(NAME STELLAR_COPY_LOADER_INF COMMAND sh -c "mkdir -p ${TEST_RUN_DIR}/plug/stellar_on_sapp && cp ${CMAKE_CURRENT_SOURCE_DIR}/env/start_loader.inf ${TEST_RUN_DIR}/plug/stellar_on_sapp/start_loader.inf")
+add_test(NAME STELLAR_COPY_START_LOADER_INF COMMAND sh -c "mkdir -p ${TEST_RUN_DIR}/plug/stellar_on_sapp && cp ${CMAKE_CURRENT_SOURCE_DIR}/env/start_loader.inf ${TEST_RUN_DIR}/plug/stellar_on_sapp/start_loader.inf")
+add_test(NAME STELLAR_COPY_DEFER_LOADER_INF COMMAND sh -c "mkdir -p ${TEST_RUN_DIR}/plug/stellar_on_sapp && cp ${CMAKE_CURRENT_SOURCE_DIR}/env/defer_loader.inf ${TEST_RUN_DIR}/plug/stellar_on_sapp/defer_loader.inf")
 add_test(NAME STELLAR_COPY_HTTP_DECODER_CONF COMMAND sh -c "mkdir -p ${TEST_RUN_DIR}/etc/http && cp ${PROJECT_SOURCE_DIR}/conf/http_decoder.toml ${TEST_RUN_DIR}/etc/http/")
 
 # update config files
 add_test(NAME STELLAR_UPDATE_SAPP_LOG_LEVEL COMMAND bash -c "sed -i 's/sapp_log.fatal/sapp_log.info/' ${TEST_RUN_DIR}/etc/sapp_log.conf")
 add_test(NAME STELLAR_UPDATE_SAPP_SYN_MODE COMMAND bash -c "sed -i 's/syn_mandatory=1/syn_mandatory=0/' ${TEST_RUN_DIR}/etc/sapp.toml")
+add_test(NAME STELLAR_ENABLE_SAPP_MONITOR COMMAND bash -c "sed -i 's/monitor_thread_enabled=0/monitor_thread_enabled=1/' ${TEST_RUN_DIR}/etc/sapp.toml")
 # add_test(NAME UPDATE_SAPP_REORDER COMMAND bash -c "sed -i 's/reorder_pkt_max=32/reorder_pkt_max=5/' ${TEST_RUN_DIR}/etc/sapp.toml")         
 
 # update plugin to be tested
-add_test(NAME STELLAR_ON_SAPP_SO COMMAND sh -c "cp ${STELLAR_ON_SAPP_LIB_DIR}/stellar_on_sapp.so ${TEST_RUN_DIR}/plug/stellar_on_sapp/stellar_on_sapp.so")
+# add_test(NAME STELLAR_ON_SAPP_SO COMMAND sh -c "cp ${STELLAR_ON_SAPP_LIB_DIR}/stellar_on_sapp.so ${TEST_RUN_DIR}/plug/stellar_on_sapp/stellar_on_sapp.so")
+add_test(NAME STELLAR_ON_SAPP_SO COMMAND sh -c "rpm -ql stellar-on-sapp | grep stellar_on_sapp.so | xargs -i cp -f {} ${TEST_RUN_DIR}/plug/stellar_on_sapp/stellar_on_sapp.so")
 add_test(NAME STELLAR_HTTP_DECODER_SO COMMAND sh -c "cp ${CMAKE_BINARY_DIR}/src/${DECODER_NAME}.so ${TEST_RUN_DIR}/stellar_plugin/${DECODER_NAME}.so")
 add_test(NAME STELLAR_HTTP_DECODER_GTEST_SO COMMAND sh -c "cp ${CMAKE_BINARY_DIR}/test/${DECODER_NAME}_test.so ${TEST_RUN_DIR}/stellar_plugin/${DECODER_NAME}_test.so")
 
-set_tests_properties(STELLAR_INSTALL_TEST_MAIN  STELLAR_COPY_SPEC STELLAR_COPY_CONFLIST STELLAR_COPY_LOADER_INF
-                    STELLAR_ON_SAPP_SO STELLAR_HTTP_DECODER_SO STELLAR_HTTP_DECODER_GTEST_SO STELLAR_UPDATE_SAPP_LOG_LEVEL
+set_tests_properties(STELLAR_INSTALL_TEST_MAIN  STELLAR_COPY_SPEC STELLAR_COPY_CONFLIST STELLAR_COPY_START_LOADER_INF STELLAR_COPY_DEFER_LOADER_INF 
+                    STELLAR_ON_SAPP_SO STELLAR_HTTP_DECODER_SO STELLAR_HTTP_DECODER_GTEST_SO STELLAR_UPDATE_SAPP_LOG_LEVEL STELLAR_UPDATE_SAPP_SYN_MODE STELLAR_ENABLE_SAPP_MONITOR
                      PROPERTIES FIXTURES_SETUP TestFixture)
-
 
 set(TEST_JSON_DIR ${PROJECT_SOURCE_DIR}/test/test_result_json)        
 set(TEST_PCAP_DIR ${PROJECT_SOURCE_DIR}/test/http_pcap)

@@ -7,17 +7,9 @@
 *   Copyright: (c) Since 2022 Geedge Networks, Ltd. All rights reserved.
 ***********************************************************************************************
 */
-
-
 #ifndef _HTTP_DECODER_TABLE_H_
 #define _HTTP_DECODER_TABLE_H_
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 #include <stddef.h>
-
 #include "http_decoder.h"
 #include "http_decoder_inc.h"
 #include "http_decoder_string.h"
@@ -90,9 +82,4 @@ int http_decoder_table_header_complete(struct http_decoder_table *table);
 void http_decoder_table_set_header_complete(struct http_decoder_table *table);
 
 void http_decoder_table_reset_header_complete(struct http_decoder_table *table);
-
-#ifdef __cplusplus
-}
-#endif
-
 #endif

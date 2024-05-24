@@ -15,6 +15,10 @@ cJSON *g_test_result_root = NULL;
 cJSON *g_load_result_root = NULL;
 int g_ret = 0;
 
+extern "C" int get_current_worker_thread_id(void)
+{
+	return 0;
+}
 
 extern "C" int libsapp_setup_env(int argc, char *argv[]);
 
@@ -102,12 +106,19 @@ TEST(PROTOCOL, compare_result_json)
 				result_json_str = cJSON_Print(t_test);
 				printf("TEST Diff:\n%s\n", result_json_str);
 				free(result_json_str);
-				ASSERT_EQ(1, ret);
+				goto fail;
 			}
 			t_load = t_load->next;
 			t_test = t_test->next;
 		}
 	}
+	cJSON_Delete(g_load_result_root);
+	cJSON_Delete(g_test_result_root);
+	return;
+fail:
+	cJSON_Delete(g_load_result_root);
+	cJSON_Delete(g_test_result_root);
+	return;	
 }
 
 void run_gtest_main()

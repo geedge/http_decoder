@@ -7,16 +7,10 @@
 *   Copyright: (c) Since 2022 Geedge Networks, Ltd. All rights reserved.
 ***********************************************************************************************
 */
-
-
 #include <assert.h>
 #include <stdlib.h>
 #include <string.h>
-
-#include "http_decoder_table.h"
-#include "http_decoder.h"
-#include "http_decoder_string.h"
-#include "stellar/utils.h"
+#include "http_decoder_inc.h"
 
 #define INIT_HEADER_CNT 16
 #define MAX_URI_CACHE_SIZE 2048
@@ -90,23 +84,18 @@ void http_decoder_table_free(struct http_decoder_table *table)
     if (NULL == table) {
         return;
     }
-
     if (table->uri.cache.str != NULL) {
         FREE(table->uri.cache.str);
     }
-
     if (table->status.cache.str != NULL) {
         FREE(table->status.cache.str);
     }
-
     if (table->method.cache.str != NULL) {
         FREE(table->method.cache.str);
     }
-
     if (table->version.cache.str != NULL) {
         FREE(table->version.cache.str);
     }
-
     if (table->body.cache.str != NULL) {
         FREE(table->body.cache.str);
     }
@@ -125,7 +114,6 @@ void http_decoder_table_free(struct http_decoder_table *table)
         MEMPOOL_FREE(table->ref_mempool, table->headers);
         table->headers = NULL;
     }
-
     MEMPOOL_FREE(table->ref_mempool, table);
 }
 
@@ -135,7 +123,6 @@ http_decoder_table_state(struct http_decoder_table *table, enum http_item type)
     if (NULL == table) {
         return STRING_STATE_INIT;
     }
-
     struct http_decoder_header *header = NULL;
     enum string_state state = STRING_STATE_INIT;
     assert(table);
@@ -409,7 +396,6 @@ int http_decoder_table_get_uri(struct http_decoder_table *table, struct hstring 
     if (NULL == table || NULL == out) {
         return -1;
     }
-
     return http_decoder_string_get(&table->uri, out);
 }
 
@@ -418,7 +404,6 @@ int http_decoder_table_get_method(struct http_decoder_table *table, struct hstri
     if (NULL == table || NULL == out) {
         return -1;
     }
-
     return http_decoder_string_get(&table->method, out);
 }
 
@@ -427,7 +412,6 @@ int http_decoder_table_get_status(struct http_decoder_table *table, struct hstri
     if (NULL == table || NULL == out) {
         return -1;
     }
-
     return http_decoder_string_get(&table->status, out);
 }
 
@@ -436,7 +420,6 @@ int http_decoder_table_get_version(struct http_decoder_table *table, struct hstr
     if (NULL == table || NULL == out) {
         return -1;
     }
-
     return http_decoder_string_get(&table->version, out);
 }
 
@@ -445,7 +428,6 @@ int http_decoder_table_get_body(struct http_decoder_table *table, struct hstring
     if (NULL == table || NULL == out) {
         return -1;
     }
-
     return http_decoder_string_get(&table->body, out);
 }
 
@@ -485,7 +467,6 @@ int http_decoder_table_iter_header(struct http_decoder_table *table,
     if (NULL == table || NULL == hdr) {
         return -1;
     }
-
     if (table->header_iter >= table->header_cnt) {
         return -1;
     }
@@ -504,7 +485,6 @@ int http_decoder_table_iter_header(struct http_decoder_table *table,
 
     hdr->key.str = NULL;
     hdr->key.str_len = 0;
-
     hdr->val.str = NULL;
     hdr->val.str_len = 0;
 
@@ -537,7 +517,6 @@ int http_decoder_table_header_complete(struct http_decoder_table *table)
     if (NULL == table) {
         return -1;
     }
-
     return table->header_complete;
 }
 
@@ -546,7 +525,6 @@ void http_decoder_table_set_header_complete(struct http_decoder_table *table)
     if (NULL == table) {
         return;
     }
-
     table->header_complete = 1;
 }
 
@@ -555,6 +533,5 @@ void http_decoder_table_reset_header_complete(struct http_decoder_table *table)
     if (NULL == table) {
         return;
     }
-
     table->header_complete = 0;
 }

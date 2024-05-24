@@ -7,25 +7,18 @@
 *   Copyright: (c) Since 2022 Geedge Networks, Ltd. All rights reserved.
 ***********************************************************************************************
 */
-
-
 #include <zlib.h>
 #include <string.h>
 #include <assert.h>
 #include <brotli/decode.h>
-
-#include "stellar/utils.h"
-#include "http_decoder_utils.h"
-#include "http_content_decompress.h"
+#include "http_decoder_inc.h"
 
 #define BUFFER_SIZE (16 * 1024)
 
 struct http_content_decompress {
     enum http_content_encoding encoding;
-
     z_stream *z_stream_ptr;
     BrotliDecoderState *br_state;
-
     char *buffer;
     size_t buffer_size;
 };
@@ -36,15 +29,12 @@ http_content_encoding_str2int(const char *content_encoding)
     if (strcasestr(content_encoding, "gzip") != NULL) {
         return HTTP_CONTENT_ENCODING_GZIP;
     }
-
     if (strcasestr(content_encoding, "deflate") != NULL) {
         return HTTP_CONTENT_ENCODING_DEFLATE;
     }
-
     if (strcasestr(content_encoding, "br") != NULL) {
         return HTTP_CONTENT_ENCODING_BR;
     }
-
     return HTTP_CONTENT_ENCODING_NONE;
 }
 
@@ -54,15 +44,12 @@ http_content_encoding_int2str(enum http_content_encoding content_encoding)
     if (content_encoding == HTTP_CONTENT_ENCODING_GZIP) {
         return "gzip";
     }
-
     if (content_encoding == HTTP_CONTENT_ENCODING_DEFLATE) {
         return "deflate";
     }
-
     if (content_encoding == HTTP_CONTENT_ENCODING_BR) {
         return "br";
     }
-
     return "unknown";
 }
 
@@ -98,7 +85,6 @@ http_content_decompress_create(enum http_content_encoding encoding)
                 goto error;
             }
         }
-
         if (encoding == HTTP_CONTENT_ENCODING_DEFLATE) {
             if (inflateInit2(decompress->z_stream_ptr, -MAX_WBITS) != Z_OK) {
                 goto error;
@@ -112,7 +98,6 @@ http_content_decompress_create(enum http_content_encoding encoding)
             goto error;
         }
     }
-
     return decompress;
 
 error:
@@ -125,17 +110,14 @@ void http_content_decompress_destroy(struct http_content_decompress *decompress)
     if (NULL == decompress) {
         return;
     }
-
     if (decompress->z_stream_ptr != NULL) {
         inflateEnd(decompress->z_stream_ptr);
         FREE(decompress->z_stream_ptr);
     }
-
     if (decompress->br_state) {
         BrotliDecoderDestroyInstance(decompress->br_state);
         decompress->br_state = NULL;
     }
-
     FREE(decompress->buffer);
     FREE(decompress);
 }
@@ -257,12 +239,10 @@ int http_content_decompress_write(struct http_content_decompress *decompress,
         return http_content_decompress_write_zlib(decompress, indata, indata_len,
                                                   outdata, outdata_len);
     }
-
     if (decompress->encoding == HTTP_CONTENT_ENCODING_BR) {
         return http_content_decompress_write_br(decompress, indata, indata_len,
                                                 outdata, outdata_len);
     }
-
     assert(0);
     return -1;
 }

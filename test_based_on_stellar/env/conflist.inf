@@ -4,3 +4,4 @@
 [protocol]
 
 [business]
+./plug/stellar_on_sapp/defer_loader.inf

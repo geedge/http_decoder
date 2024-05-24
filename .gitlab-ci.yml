@@ -7,7 +7,7 @@ variables:
                               libMESA_htable-devel libMESA_jump_layer libMESA_jump_layer-devel
                               libMESA_handle_logger-devel libMESA_field_stat2-devel
                               libfieldstat3-devel libfieldstat4-devel libbreakpad_mini-devel
-                              zlib-devel brotli brotli-devel stellar-c-devel stellar-c systemd-devel
+                              zlib-devel brotli brotli-devel stellar-on-sapp-devel stellar-on-sapp systemd-devel
   SYMBOL_TARGET: http_decoder
   TEST_NAME: gtest_http_decoder
   INSTALL_PREFIX: "/opt/tsg/"

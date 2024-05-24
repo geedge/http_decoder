@@ -7,22 +7,15 @@
 *   Copyright: (c) Since 2022 Geedge Networks, Ltd. All rights reserved.
 ***********************************************************************************************
 */
-
-
 #ifndef _HTTP_DECODER_HALF_H_
 #define _HTTP_DECODER_HALF_H_
 
-#ifdef __cplusplus
-extern "C"
-{
-#endif
-
 #include <stddef.h>
-
 #include "stellar/session.h"
 #include "http_decoder.h"
 #include "http_content_decompress.h"
 #include "http_decoder_result_queue.h"
+#include "llhttp.h"
 
 // only one http event is fired at a time
 enum http_event {
@@ -59,7 +52,7 @@ typedef void http_event_cb(enum http_event event, struct http_decoder_half_data 
                            struct http_event_context *ev_ctx);
 
 struct http_decoder_half *
-http_decoder_half_new(nmx_pool_t *mempool, http_event_cb *event_cb, int http_type,
+http_decoder_half_new(nmx_pool_t *mempool, http_event_cb *event_cb, enum llhttp_type http_type,
                       int decompress_switch);
 
 void http_decoder_half_free(nmx_pool_t *mempool, struct http_decoder_half *half);
@@ -111,9 +104,4 @@ int http_decoder_join_url_finally(struct http_event_context *ev_ctx,
                                    nmx_pool_t *mempool);
 int http_half_data_get_url(struct http_decoder_half_data *res_data, struct hstring *url);
 int http_half_data_get_transaction_seq(struct http_decoder_half_data *hf_data);
-
-#ifdef __cplusplus
-}
-#endif
-
 #endif

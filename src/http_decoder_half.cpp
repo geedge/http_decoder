@@ -7,21 +7,12 @@
 *   Copyright: (c) Since 2022 Geedge Networks, Ltd. All rights reserved.
 ***********************************************************************************************
 */
-
 #include <assert.h>
 #include <stdio.h>
 #include <string.h>
 #include <arpa/inet.h>
-
-#include "stellar/utils.h"
-#include "stellar/session_mq.h"
-#include "llhttp.h"
-#include "http_decoder.h"
 #include "http_decoder_inc.h"
-#include "http_decoder_utils.h"
-#include "http_decoder_half.h"
-#include "http_decoder_table.h"
-#include "http_content_decompress.h"
+#include "llhttp.h"
 
 struct http_decoder_half_data
 {
@@ -205,10 +196,10 @@ static int on_reset(llhttp_t *http)
     return 0;
 }
 
-static inline int is_line_eof(struct http_decoder_half *half)
+static inline int is_line_crlf(struct http_decoder_half *half)
 {
-    const char *chr_r = memrchr(half->data, '\r', half->data_len);
-    const char *chr_n = memrchr(half->data, '\n', half->data_len);
+    const char *chr_r = (char *)memrchr(half->data, '\r', half->data_len);
+    const char *chr_n = (char *)memrchr(half->data, '\n', half->data_len);
     if (chr_r && chr_n && (chr_r + 1 == chr_n))
     {
         return 1;
@@ -238,7 +229,7 @@ static int on_method_complete(llhttp_t *http)
         container_of(http, struct http_decoder_half, parser);
     assert(half);
 
-    if (is_line_eof(half) == 0)
+    if (is_line_crlf(half) == 0)
     {
         http_decoder_table_cache(half->ref_data->table, HTTP_ITEM_METHOD);
     }
@@ -291,7 +282,7 @@ static int on_uri_complete(llhttp_t *http)
         container_of(http, struct http_decoder_half, parser);
     assert(half);
 
-    if (is_line_eof(half) == 0)
+    if (is_line_crlf(half) == 0)
     {
         http_decoder_table_cache(half->ref_data->table, HTTP_ITEM_URI);
     }
@@ -329,7 +320,7 @@ static int on_version_complete(llhttp_t *http)
         container_of(http, struct http_decoder_half, parser);
     assert(half);
 
-    if (is_line_eof(half) == 0)
+    if (is_line_crlf(half) == 0)
     {
         http_decoder_table_cache(half->ref_data->table, HTTP_ITEM_VERSION);
     }
@@ -374,7 +365,7 @@ static int on_status_complete(llhttp_t *http)
         container_of(http, struct http_decoder_half, parser);
     assert(half);
 
-    if (is_line_eof(half) == 0)
+    if (is_line_crlf(half) == 0)
     {
         http_decoder_table_cache(half->ref_data->table, HTTP_ITEM_STATUS);
     }
@@ -614,7 +605,7 @@ static int on_body(llhttp_t *http, const char *at, size_t length)
 
 static void
 http_decoder_half_init(struct http_decoder_half *half,
-                       http_event_cb *http_ev_cb, int type)
+                       http_event_cb *http_ev_cb, enum llhttp_type type)
 {
     if (NULL == half)
     {
@@ -653,14 +644,12 @@ http_decoder_half_init(struct http_decoder_half *half,
     half->settings.on_body = on_body;
 
     half->error = HPE_OK;
-
     half->http_ev_cb = http_ev_cb;
-
     half->ref_data = NULL;
 }
 
 struct http_decoder_half *
-http_decoder_half_new(nmx_pool_t *mempool, http_event_cb *ev_cb, int http_type,
+http_decoder_half_new(nmx_pool_t *mempool, http_event_cb *ev_cb, enum llhttp_type http_type,
                       int decompress_switch)
 {
     struct http_decoder_half *half = MEMPOOL_CALLOC(mempool, struct http_decoder_half, 1);
@@ -752,7 +741,7 @@ int http_decoder_half_parse(struct http_decoder_half *half, const char *data,
     half->error = llhttp_execute(&half->parser, data, data_len);
 
     int ret = 0;
-    uint8_t type = 0;
+    enum llhttp_type type = HTTP_BOTH;
     struct http_decoder_half_data *half_data = NULL;
 
     switch (half->error)
@@ -767,7 +756,7 @@ int http_decoder_half_parse(struct http_decoder_half *half, const char *data,
         ret = 0;
         break;
     default:
-        type = half->parser.type;
+        type = (enum llhttp_type)half->parser.type;
         llhttp_init(&half->parser, type, &half->settings);
         ret = -1;
         break;
@@ -1115,7 +1104,7 @@ int http_decoder_join_url_finally(struct http_event_context *ev_ctx,
 void http_decoder_get_host_feed_url(struct http_decoder_half *half)
 {
     struct http_header host_result = {};
-    struct hstring host_key = {"Host", 4};
+    struct hstring host_key = {(char *)"Host", 4};
     const char *host_refer_str = NULL;
     int host_refer_len = 0;
 

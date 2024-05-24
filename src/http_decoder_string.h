@@ -11,13 +11,7 @@
 #ifndef _HTTP_DECODER_STRING_H_
 #define _HTTP_DECODER_STRING_H_
 
-#ifdef __cplusplus
-extern "C"
-{
-#endif
-
 #include "http_decoder.h"
-
 
 enum string_state {
     STRING_STATE_INIT,
@@ -87,9 +81,4 @@ enum string_state http_decoder_string_state(struct http_decoder_string *rstr);
 int http_decoder_string_get(struct http_decoder_string *rstr, struct hstring *out);
 
 void http_decoder_string_dump(struct http_decoder_string *rstr, const char *desc);
-
-#ifdef __cplusplus
-}
-#endif
-
 #endif

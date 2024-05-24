@@ -8,14 +8,23 @@ DESTROY_FUNC=STELLAR_START_LOADER_EXIT
 FUNC_FLAG=ALL
 FUNC_NAME=stellar_on_sapp_tcpall_entry
 
-#[TCP]
-#FUNC_FLAG=ALL
-#FUNC_NAME=stellar_on_sapp_tcp_entry
+[TCP]
+FUNC_FLAG=ALL
+FUNC_NAME=stellar_on_sapp_tcp_entry
 
-#[TCP]
-#FUNC_FLAG=ALL
-#FUNC_NAME=stellar_on_sapp_detach_check_entry
 
 [UDP]
 FUNC_FLAG=ALL
 FUNC_NAME=stellar_on_sapp_udp_entry
+
+[IP]
+FUNC_FLAG=ALL
+FUNC_NAME=stellar_on_sapp_ip4_entry
+
+[IPV6]
+FUNC_FLAG=ALL
+FUNC_NAME=stellar_on_sapp_ip6_entry
+
+[POLLING]
+FUNC_FLAG=ALL
+FUNC_NAME=stellar_on_sapp_polling_entry

@@ -28,8 +28,8 @@ extern "C"
 #include "stellar/session_mq.h"
 #include "md5.h"
     int commit_test_result_json(cJSON *node, const char *name);
-    extern int http_decoder_test_entry(struct session *sess, int topic_id, const void *data,void *cb_arg);
-    static HTTP_DECODER_PLUG_ENTRY_FUN_T g_entry_fun = http_decoder_test_entry;
+    extern void http_decoder_test_entry(struct session *sess, int topic_id, const void *raw_msg, void *no_use_ctx, void *plugin_env);
+    static on_msg_cb_func *g_entry_fun = http_decoder_test_entry;
 }
 #endif
 
@@ -51,8 +51,9 @@ struct gtest_plug_exdata_t
 
 static int g_result_count = 0;
 static int g_header_count = 1;
-static int g_exdata_idx = 0;
-static int g_topic_id = 0;
+static int g_http_gtest_plugin_id = -1;
+static int g_exdata_idx = -1;
+static int g_topic_id = -1;
 
 
 
@@ -224,7 +225,7 @@ void http_url_add_to_json(cJSON *ctx, struct http_message *msg)
 
 // Full duplex
 static void commit_last_half_flow_data(struct session *sess, struct gtest_plug_exdata_t *gtest_plug_exdata,
-                                       struct http_message *msg, enum http_transaction_type type)
+                                       struct http_message *msg, enum http_transaction_type type, int final)
 {
     char result_name[MAX_KEY_STR_LEN] = {0};
 
@@ -253,18 +254,20 @@ static void commit_last_half_flow_data(struct session *sess, struct gtest_plug_e
         g_result_count++;
     }
 
-    gtest_plug_exdata->result_jnode[type] = cJSON_CreateObject();
-    if (HTTP_TRANSACTION_REQ == type)
-    {
-        cJSON_AddStringToObject(gtest_plug_exdata->result_jnode[type], GTEST_HTTP_TRANS_NAME, "request");
-    }
-    else if (HTTP_TRANSACTION_RES == type)
-    {
-        cJSON_AddStringToObject(gtest_plug_exdata->result_jnode[type], GTEST_HTTP_TRANS_NAME, "response");
-    }
-    if (msg)
-    {
-        transaction_index_to_json(gtest_plug_exdata->result_jnode[type], http_message_get_transaction_seq(msg));
+    if(0 == final){
+        gtest_plug_exdata->result_jnode[type] = cJSON_CreateObject();
+        if (HTTP_TRANSACTION_REQ == type)
+        {
+            cJSON_AddStringToObject(gtest_plug_exdata->result_jnode[type], GTEST_HTTP_TRANS_NAME, "request");
+        }
+        else if (HTTP_TRANSACTION_RES == type)
+        {
+            cJSON_AddStringToObject(gtest_plug_exdata->result_jnode[type], GTEST_HTTP_TRANS_NAME, "response");
+        }
+        if (msg)
+        {
+            transaction_index_to_json(gtest_plug_exdata->result_jnode[type], http_message_get_transaction_seq(msg));
+        }
     }
 }
 
@@ -285,22 +288,21 @@ static void http_decoder_test_update_session_tuple4(struct session *sess, struct
     }
 }
 
-extern "C" int
-http_decoder_test_entry(struct session *sess, int topic_id, const void *data,
-                        void *cb_arg)
+extern "C" void http_decoder_test_entry(struct session *sess, int topic_id, const void *raw_msg, void *no_use_ctx, void *plugin_env)
+// extern "C" int http_decoder_test_entry(struct session *sess, int topic_id, const void *data, void *cb_arg)
 {
     struct http_request_line req_line = {0};
     struct http_response_line res_line = {0};
     struct http_header header = {0};
     struct hstring body = {0};
-    struct http_message *msg = (struct http_message *)data;
+    struct http_message *msg = (struct http_message *)raw_msg;
     enum http_message_type msg_type = http_message_type(msg);
 
-    struct gtest_plug_exdata_t *gtest_plug_exdata = (struct gtest_plug_exdata_t *)session_get_ex_data(sess, g_exdata_idx);
+    struct gtest_plug_exdata_t *gtest_plug_exdata = (struct gtest_plug_exdata_t *)session_exdata_get(sess, g_exdata_idx);
     if (NULL == gtest_plug_exdata)
     {
         gtest_plug_exdata = (struct gtest_plug_exdata_t *)calloc(1, sizeof(struct gtest_plug_exdata_t));
-        session_set_ex_data(sess, g_exdata_idx, gtest_plug_exdata);
+        session_exdata_set(sess, g_exdata_idx, gtest_plug_exdata);
     }
 
     if (msg_type == HTTP_MESSAGE_REQ_LINE || msg_type == HTTP_MESSAGE_REQ_HEADER || msg_type == HTTP_MESSAGE_REQ_BODY)
@@ -317,7 +319,7 @@ http_decoder_test_entry(struct session *sess, int topic_id, const void *data,
     switch (msg_type)
     {
     case HTTP_MESSAGE_REQ_LINE:
-        commit_last_half_flow_data(sess, gtest_plug_exdata, msg, HTTP_TRANSACTION_REQ);
+        commit_last_half_flow_data(sess, gtest_plug_exdata, msg, HTTP_TRANSACTION_REQ, 0);
         http_message_get_request_line(msg, &req_line);
         req_line_to_json(gtest_plug_exdata->result_jnode[HTTP_TRANSACTION_REQ], &req_line);
         break;
@@ -337,7 +339,7 @@ http_decoder_test_entry(struct session *sess, int topic_id, const void *data,
         append_http_payload(sess, gtest_plug_exdata, &body, HTTP_TRANSACTION_REQ);
         break;
     case HTTP_MESSAGE_RES_LINE:
-        commit_last_half_flow_data(sess, gtest_plug_exdata, msg, HTTP_TRANSACTION_RES);
+        commit_last_half_flow_data(sess, gtest_plug_exdata, msg, HTTP_TRANSACTION_RES, 0);
         http_message_get_response_line(msg, &res_line);
         res_line_to_json(gtest_plug_exdata->result_jnode[HTTP_TRANSACTION_RES], &res_line);
         break;
@@ -361,22 +363,21 @@ http_decoder_test_entry(struct session *sess, int topic_id, const void *data,
         break;
     }
 
-    return 0;
+    return;
 }
 
-void http_decoder_test_exdata_free(struct session *sess, int idx, void *ex_ptr,
-                                   void *arg)
+void http_decoder_test_exdata_free(struct session *sess, int idx, void *ex_ptr, void *arg)
 {
     if (ex_ptr != NULL)
     {
         struct gtest_plug_exdata_t *gtest_plug_exdata = (struct gtest_plug_exdata_t *)ex_ptr;
         if (gtest_plug_exdata->result_jnode[HTTP_TRANSACTION_REQ])
         {
-            commit_last_half_flow_data(sess, gtest_plug_exdata, NULL, HTTP_TRANSACTION_REQ);
+            commit_last_half_flow_data(sess, gtest_plug_exdata, NULL, HTTP_TRANSACTION_REQ, 1);
         }
         if (gtest_plug_exdata->result_jnode[HTTP_TRANSACTION_RES])
         {
-            commit_last_half_flow_data(sess, gtest_plug_exdata, NULL, HTTP_TRANSACTION_RES);
+            commit_last_half_flow_data(sess, gtest_plug_exdata, NULL, HTTP_TRANSACTION_RES, 1);
         }
         free(ex_ptr);
     }
@@ -384,29 +385,26 @@ void http_decoder_test_exdata_free(struct session *sess, int idx, void *ex_ptr,
 
 extern "C" void *http_decoder_test_init(struct stellar *st)
 {
-    g_exdata_idx =
-        stellar_session_get_ex_new_index(st, "HTTP_DECODER_REQ_TEST",
+    g_http_gtest_plugin_id = stellar_session_plugin_register(st, NULL, NULL, NULL);
+    g_exdata_idx = stellar_session_exdata_new_index(st, "HTTP_DECODER_REQ_TEST",
                                          http_decoder_test_exdata_free,
-                                         NULL);
+                                                NULL);
     if (g_exdata_idx < 0)
     {
-        printf("[%s:%d]: can't get http_decoder exdata index !!!\n",
-               __FUNCTION__, __LINE__);
-        exit(-1);
+        printf("[%s:%d]: can't get http_decoder exdata index !!!\n", __FUNCTION__, __LINE__);
+        return NULL;
     }
 
-    g_topic_id = session_mq_get_topic_id(st, "HTTP_DECODER_MESSAGE");
+    g_topic_id = stellar_session_mq_get_topic_id(st, HTTP_DECODER_TOPIC);
     if (g_topic_id < 0)
     {
-        printf("[%s:%d]: can't get http_decoder topic id !!!\n",
-               __FUNCTION__, __LINE__);
-        exit(-1);
+        printf("[%s:%d]: can't get http_decoder topic id !!!\n", __FUNCTION__, __LINE__);
+        return NULL;
     }
+    stellar_session_mq_subscribe(st, g_topic_id, g_entry_fun, g_http_gtest_plugin_id);
+    printf("http_decoder_test_init succ, plugin_id:%d, topic_id:%d\n", g_http_gtest_plugin_id, g_topic_id);
 
-    session_mq_subscribe_topic(st, g_topic_id, g_entry_fun, NULL);
-    // printf("http_decoder_test_init OK!\n");
-
-    return NULL;
+    return (void *)strdup("http_decoder_test_ctx");
 }
 
 extern "C" void http_decoder_test_exit(void *test_ctx)
@@ -415,11 +413,10 @@ extern "C" void http_decoder_test_exit(void *test_ctx)
     {
         FREE(test_ctx);
     }
-
     printf("http_decoder_test_exit OK!\n");
 }
 
-extern "C" void http_decoder_plug_set_entry_fuc(HTTP_DECODER_PLUG_ENTRY_FUN_T entry_fun)
+extern "C" void http_decoder_plug_set_entry_fuc(on_msg_cb_func *entry_fun)
 {
     g_entry_fun = entry_fun;
 }

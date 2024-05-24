@@ -58,6 +58,7 @@ struct http_response_line {
 };
 
 struct http_message;
+#define HTTP_DECODER_TOPIC     "HTTP_DECODER_MESSAGE"
 
 enum http_message_type http_message_type(struct http_message *msg);
 
@@ -90,7 +91,6 @@ int http_message_reset_header_iter(struct http_message *msg);
 */
 int http_message_get_raw_body(struct http_message *msg,
                               struct hstring *body);
-
 
 /**
  * @brief If the body hasn't been compressed, return raw body

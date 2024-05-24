@@ -7,19 +7,11 @@
 *   Copyright: (c) Since 2022 Geedge Networks, Ltd. All rights reserved.
 ***********************************************************************************************
 */
-
-
 #ifndef _HTTP_DECODER_UTILS_H_
 #define _HTTP_DECODER_UTILS_H_
 
-#ifdef __cplusplus
-extern "C"
-{
-#endif
-
 #include <stdlib.h>
 #include <stdio.h>
-
 
 char *safe_dup(const char *str, size_t len);
 
@@ -58,9 +50,4 @@ enum http_decoder_log_level {
         }                                                                        \
     }
 #endif
-
-#ifdef __cplusplus
-}
-#endif
-
 #endif
