@@ -7,6 +7,8 @@ extern "C"
 #endif
 
 enum http_message_type {
+    HTTP_TRANSACTION_NEW,
+
     HTTP_MESSAGE_REQ_LINE, 
     HTTP_MESSAGE_REQ_HEADER,
     HTTP_MESSAGE_REQ_HEADER_END,
@@ -19,7 +21,6 @@ enum http_message_type {
     HTTP_MESSAGE_RES_BODY,
     HTTP_MESSAGE_RES_BODY_END,
 
-    HTTP_TRANSACTION_NEW,
     HTTP_TRANSACTION_FREE,
     
     HTTP_MESSAGE_MAX

@@ -11,6 +11,7 @@
 #ifndef _HTTP_DECODER_INC_H_
 #define _HTTP_DECODER_INC_H_
 
+#include <cstddef>
 #ifdef __cplusplus
 extern "C"
 {
@@ -61,7 +62,7 @@ extern "C"
 #define DEFAULT_MEMPOOL_SIZE (32 * 1024)
 
 #define HTTPD_CFG_FILE   "./etc/http/http_decoder.toml"
-#define FILEDSTAT_OUTPUT_FILE   "./http_decoder.fs"
+#define FILEDSTAT_OUTPUT_FILE   "./http_decoder.fs4"
 
 struct http_decoder_config
 {
@@ -96,27 +97,14 @@ struct http_decoder_exdata
     nmx_pool_t *mempool;
 };
 
-struct http_decoder_stat
-{
-    long long incoming_bytes;
-    long long incoming_pkts;
-    long long incoming_trans;
-    long long err_pkts;
-    int counter;
-};
-
-struct http_decoder_context
+struct http_decoder_env
 {
     int plugin_id;
     int httpd_msg_topic_id;
     int ex_data_idx;
-    int fs_incoming_bytes_id;
-    int fs_incoming_pkts_id;
-    int fs_incoming_trans_id;
-    int fs_err_pkts_id;
     struct stellar *st;
-    struct fieldstat_easy *fse;
     struct http_decoder_config hd_cfg;
+    struct http_decoder_stat hd_stat;
 };
 
 struct http_message;

@@ -153,9 +153,9 @@ http_content_decompress_write_zlib(struct http_content_decompress *decompress,
                                              decompress->buffer_size);
                 *outdata = decompress->buffer;
                 *outdata_len = *outdata_len + have;
-                http_decoder_log(DEBUG, "%s realloc outbuffer %zu bytes", 
-                                 http_content_encoding_int2str(decompress->encoding), 
-                                 decompress->buffer_size);
+                // http_decoder_log(DEBUG, "%s realloc outbuffer %zu bytes", 
+                //                  http_content_encoding_int2str(decompress->encoding), 
+                //                  decompress->buffer_size);
                 z_stream_ptr->avail_out = have;
                 z_stream_ptr->next_out = (unsigned char *)decompress->buffer + 
                                          (decompress->buffer_size - have);
@@ -211,9 +211,9 @@ http_content_decompress_write_br(struct http_content_decompress *decompress,
         if (ret == BROTLI_DECODER_RESULT_ERROR) {
             BrotliDecoderErrorCode errcode =
                 BrotliDecoderGetErrorCode(decompress->br_state);
-            http_decoder_log(ERROR,
-                             "BrotliDecoderDecompressStream() failed: errno = %d, %s",
-                             errcode, BrotliDecoderErrorString(errcode));
+            // http_decoder_log(ERROR,
+            //                  "BrotliDecoderDecompressStream() failed: errno = %d, %s",
+            //                  errcode, BrotliDecoderErrorString(errcode));
             return -1;
         }
 

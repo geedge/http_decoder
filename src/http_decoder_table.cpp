@@ -527,3 +527,8 @@ void http_decoder_table_update_commit_index(struct http_decoder_table *table)
 {
     table->commit_header_index = table->header_index;
 }
+
+int http_decoder_table_get_total_parsed_header(struct http_decoder_table *table)
+{
+    return table->header_index;
+}

@@ -106,6 +106,11 @@ void *session_exdata_get(struct session *sess, int idx)
     return sess->exdata;
 }
 
+enum session_state session_get_current_state(struct session *sess)
+{
+    return SESSION_STATE_ACTIVE;
+}
+
 int stellar_session_mq_get_topic_id(struct stellar *st, const char *topic_name)
 {
     if(strcmp(topic_name, "HTTP_DECODER_MESSAGE") == 0){

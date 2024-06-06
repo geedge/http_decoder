@@ -464,7 +464,18 @@ extern "C" void http_decoder_test_state_entry(struct session *sess, int topic_id
     }else{
         json_object = gtest_plug_exdata->result_jnode[HTTP_TRANSACTION_RES];
     }
-
+    if(HTTP_TRANSACTION_FREE == msg_type){
+        unsigned char flow_flag;
+        session_is_symmetric(sess, &flow_flag);
+        if(SESSION_SEEN_C2S_FLOW == flow_flag){
+            json_object = gtest_plug_exdata->result_jnode[HTTP_TRANSACTION_REQ];
+        }
+        else if(SESSION_SEEN_S2C_FLOW == flow_flag){
+            json_object = gtest_plug_exdata->result_jnode[HTTP_TRANSACTION_RES];
+        }else{ // is symmetric
+            json_object = gtest_plug_exdata->result_jnode[HTTP_TRANSACTION_RES];
+        }
+    }
     int cur_transaction_id = http_message_get_transaction_seq((const http_message* )raw_msg);
 
     if(HTTP_TRANSACTION_NEW ==msg_type || HTTP_TRANSACTION_FREE == msg_type){

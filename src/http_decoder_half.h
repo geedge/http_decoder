@@ -40,11 +40,11 @@ struct http_decoder_half;
 struct http_decoder_half_data;
 
 typedef void http_event_cb(enum http_event event, struct http_decoder_half_data **data,
-                           struct http_event_context *ev_ctx);
+                           struct http_event_context *ev_ctx, void *httpd_plugin_env);
 
 struct http_decoder_half *
 http_decoder_half_new(nmx_pool_t *mempool, http_event_cb *event_cb, enum llhttp_type http_type,
-                      int decompress_switch);
+                      int decompress_switch, struct http_decoder_env *httpd_env);
 
 void http_decoder_half_free(nmx_pool_t *mempool, struct http_decoder_half *half);
 
@@ -52,8 +52,7 @@ void http_decoder_half_reinit(struct http_decoder_half *half, int topic_id,
                               struct http_decoder_result_queue *queue,
                               nmx_pool_t *mempool, struct session *sess);
 
-int http_decoder_half_parse(struct http_decoder_half *half, const char *data,
-                            size_t data_len);
+int http_decoder_half_parse(struct http_decoder_half *half, const char *data, size_t data_len);
 
 long long http_decoder_half_trans_count(struct http_decoder_half *half);
 
@@ -61,8 +60,7 @@ long long http_decoder_half_trans_count(struct http_decoder_half *half);
 struct http_decoder_half_data *
 http_decoder_half_data_new(nmx_pool_t *mempool);
 
-void http_decoder_half_data_free(nmx_pool_t *mempool,
-                                 struct http_decoder_half_data *data);
+void http_decoder_half_data_free(nmx_pool_t *mempool, struct http_decoder_half_data *data);
 
 int http_decoder_half_data_get_request_line(struct http_decoder_half_data *data,
                                             struct http_request_line *line);
@@ -78,11 +76,9 @@ int http_decoder_half_data_iter_header(struct http_decoder_half_data *data,
 int http_decoder_half_data_reset_header_iter(struct http_decoder_half_data *req_data);
 int http_decoder_half_data_has_parsed_header(struct http_decoder_half_data *data);
 
-int http_decoder_half_data_get_raw_body(const struct http_decoder_half_data *data,
-                                        struct hstring *body);
+int http_decoder_half_data_get_raw_body(const struct http_decoder_half_data *data, struct hstring *body);
 
-int http_decoder_half_data_get_decompress_body(const struct http_decoder_half_data *data,
-                                               struct hstring *body);
+int http_decoder_half_data_get_decompress_body(const struct http_decoder_half_data *data, struct hstring *body);
 
 void http_decoder_half_data_dump(struct http_decoder_half *half);
 
@@ -97,4 +93,8 @@ int http_half_data_get_url(struct http_decoder_half_data *res_data, struct hstri
 int http_half_data_get_transaction_seq(struct http_decoder_half_data *hf_data);
 
 void http_half_data_update_commit_index(struct http_decoder_half_data * half_data);
+void http_half_pre_context_free(struct session *sess, struct http_decoder_env *httpd_env,
+                                   struct http_decoder_exdata *ex_data);
+void http_half_update_state(struct http_decoder_half_data *hf_data, enum http_event state);      
+int http_half_data_get_total_parsed_header_count(struct http_decoder_half_data * half_data);                             
 #endif

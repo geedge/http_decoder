@@ -172,9 +172,14 @@ add_test(NAME STELLAR_HTTP_MSG_TYPE_STATE_S2C_TEST COMMAND  ./${TEST_MAIN} ${TES
         -r ${TEST_PCAP_DIR}/http_post_s2c.pcap  WORKING_DIRECTORY ${TEST_RUN_DIR})      
 add_test(NAME STELLAR_HTTP_MSG_TYPE_STATE_PIPELINE_TEST COMMAND  ./${TEST_MAIN} ${TEST_JSON_DIR}/http_msg_type_state_pipeline.json 
         -r ${TEST_PCAP_DIR}/http_get_multi_trans.pcap  WORKING_DIRECTORY ${TEST_RUN_DIR})    
-
+add_test(NAME STELLAR_HTTP_MSG_TYPE_STATE_SES_EXCEPTION_C2S_TEST COMMAND  ./${TEST_MAIN} ${TEST_JSON_DIR}/http_msg_type_state_exception_c2s.json
+        -r ${TEST_PCAP_DIR}/http_session_exception_c2s.pcap  WORKING_DIRECTORY ${TEST_RUN_DIR})    
+add_test(NAME STELLAR_HTTP_MSG_TYPE_STATE_SES_EXCEPTION_S2C_TEST COMMAND  ./${TEST_MAIN} ${TEST_JSON_DIR}/http_msg_type_state_exception_s2c.json
+        -r ${TEST_PCAP_DIR}/http_session_exception_s2c.pcap  WORKING_DIRECTORY ${TEST_RUN_DIR})    
 set_tests_properties(STELLAR_HTTP_MSG_TYPE_STATE_TEST
                     STELLAR_HTTP_MSG_TYPE_STATE_C2S_TEST
                     STELLAR_HTTP_MSG_TYPE_STATE_S2C_TEST
                     STELLAR_HTTP_MSG_TYPE_STATE_PIPELINE_TEST
+                    STELLAR_HTTP_MSG_TYPE_STATE_SES_EXCEPTION_C2S_TEST
+                    STELLAR_HTTP_MSG_TYPE_STATE_SES_EXCEPTION_S2C_TEST
                     PROPERTIES FIXTURES_REQUIRED TestState)

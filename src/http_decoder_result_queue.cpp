@@ -26,8 +26,7 @@ http_decoder_result_queue_new(nmx_pool_t *mempool, size_t queue_size)
     return queue;
 }
 
-void http_decoder_result_queue_free(nmx_pool_t *mempool,
-                                    struct http_decoder_result_queue *queue)
+void http_decoder_result_queue_free(nmx_pool_t *mempool, struct http_decoder_result_queue *queue)
 {
 	if (NULL == queue) {
 		return;
@@ -111,10 +110,8 @@ http_decoder_result_queue_pop_req(struct http_decoder_result_queue *queue)
     if (NULL == queue) {
         return NULL;
     }
-    struct http_decoder_half_data *req_data =
-        queue->array[queue->req_index].req_data;
+    struct http_decoder_half_data *req_data = queue->array[queue->req_index].req_data;
     queue->array[queue->req_index].req_data = NULL;
-
     return req_data;
 }
 
@@ -125,10 +122,8 @@ http_decoder_result_queue_pop_res(struct http_decoder_result_queue *queue)
         return NULL;
     }
 
-    struct http_decoder_half_data *res_data =
-        queue->array[queue->res_index].res_data;
+    struct http_decoder_half_data *res_data = queue->array[queue->res_index].res_data;
     queue->array[queue->res_index].res_data = NULL;
-
     return res_data;
 }
 

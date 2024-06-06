@@ -76,4 +76,5 @@ void http_decoder_table_reset_header_complete(struct http_decoder_table *table);
 
 void http_decoder_table_update_commit_index(struct http_decoder_table *table);
 
+int http_decoder_table_get_total_parsed_header(struct http_decoder_table *table);
 #endif
