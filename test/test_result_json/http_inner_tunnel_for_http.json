@@ -1,0 +1,15 @@
+[
+    {
+        "__X_HTTP_TUPLE4": "192.168.40.139.59234>192.168.38.83.8080"
+    },
+    {
+        "flow": "C2S",
+        "payload_block": 1,
+        "payload_size": 77
+    },
+    {
+        "flow": "S2C",
+        "payload_block": 3,
+        "payload_size": 2781
+    }
+]

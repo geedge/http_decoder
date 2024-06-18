@@ -1,2 +1,3 @@
 [entry]
 name="http_decoder_test_state_entry"
+topic="HTTP_DECODER_MESSAGE"

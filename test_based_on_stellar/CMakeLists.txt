@@ -41,7 +41,8 @@ add_test(NAME STELLAR_COPY_HTTP_GTEST_ENTRY_CONF COMMAND sh -c "mkdir -p ${TEST_
 add_test(NAME STELLAR_UPDATE_SAPP_LOG_LEVEL COMMAND bash -c "sed -i 's/sapp_log.fatal/sapp_log.info/' ${TEST_RUN_DIR}/etc/sapp_log.conf")
 add_test(NAME STELLAR_UPDATE_SAPP_SYN_MODE COMMAND bash -c "sed -i 's/syn_mandatory=1/syn_mandatory=0/' ${TEST_RUN_DIR}/etc/sapp.toml")
 add_test(NAME STELLAR_ENABLE_SAPP_MONITOR COMMAND bash -c "sed -i 's/monitor_thread_enabled=0/monitor_thread_enabled=1/' ${TEST_RUN_DIR}/etc/sapp.toml")
-add_test(NAME UPDATE_GTEST_PLUG_ENTRY COMMAND bash -c "sed -i 's/name=.*/name=\\x22http_decoder_test_entry\\x22/' ${TEST_RUN_DIR}/etc/http/gtest_entry.toml")  
+add_test(NAME UPDATE_GTEST_PLUG_ENTRY COMMAND bash -c "sed -i 's/name=.*/name=\\x22http_decoder_test_entry\\x22/' ${TEST_RUN_DIR}/etc/http/gtest_entry.toml")
+add_test(NAME UPDATE_GTEST_PLUG_TOPIC COMMAND bash -c "sed -i 's/topic=.*/topic=\\x22HTTP_DECODER_MESSAGE\\x22/' ${TEST_RUN_DIR}/etc/http/gtest_entry.toml")
 
 # update plugin to be tested
 # add_test(NAME STELLAR_ON_SAPP_SO COMMAND sh -c "cp ${STELLAR_ON_SAPP_LIB_DIR}/stellar_on_sapp.so ${TEST_RUN_DIR}/plug/stellar_on_sapp/stellar_on_sapp.so")
@@ -50,8 +51,9 @@ add_test(NAME STELLAR_HTTP_DECODER_SO COMMAND sh -c "cp ${CMAKE_BINARY_DIR}/src/
 add_test(NAME STELLAR_HTTP_DECODER_GTEST_SO COMMAND sh -c "cp ${CMAKE_BINARY_DIR}/test/${DECODER_NAME}_test.so ${TEST_RUN_DIR}/stellar_plugin/${DECODER_NAME}_test.so")
 
 set_tests_properties(STELLAR_INSTALL_TEST_MAIN  STELLAR_COPY_SPEC STELLAR_COPY_CONFLIST STELLAR_COPY_START_LOADER_INF STELLAR_COPY_DEFER_LOADER_INF STELLAR_COPY_HTTP_DECODER_CONF  STELLAR_COPY_HTTP_GTEST_ENTRY_CONF 
-                    STELLAR_ON_SAPP_SO STELLAR_HTTP_DECODER_SO STELLAR_HTTP_DECODER_GTEST_SO STELLAR_UPDATE_SAPP_LOG_LEVEL STELLAR_UPDATE_SAPP_SYN_MODE STELLAR_ENABLE_SAPP_MONITOR UPDATE_GTEST_PLUG_ENTRY
-                     PROPERTIES FIXTURES_SETUP TestFixture)
+                    STELLAR_ON_SAPP_SO STELLAR_HTTP_DECODER_SO STELLAR_HTTP_DECODER_GTEST_SO STELLAR_UPDATE_SAPP_LOG_LEVEL STELLAR_UPDATE_SAPP_SYN_MODE STELLAR_ENABLE_SAPP_MONITOR 
+                    UPDATE_GTEST_PLUG_ENTRY  UPDATE_GTEST_PLUG_TOPIC
+                    PROPERTIES FIXTURES_SETUP TestFixture)
 
 set(TEST_JSON_DIR ${PROJECT_SOURCE_DIR}/test/test_result_json)        
 set(TEST_PCAP_DIR ${PROJECT_SOURCE_DIR}/test/http_pcap)
@@ -78,8 +80,11 @@ add_test(NAME STELLAR_HTTP_CHUNKED_RES_GZIP_TEST COMMAND  ./${TEST_MAIN} ${TEST_
 add_test(NAME STELLAR_HTTP_OVER_TCP_KEEPALIVE_TEST COMMAND  ./${TEST_MAIN} ${TEST_JSON_DIR}/http_over_tcp_keepalive.json
          -r ${TEST_PCAP_DIR}/http_over_tcp_keepalive.pcap  WORKING_DIRECTORY ${TEST_RUN_DIR})
 
-add_test(NAME STELLAR_HTTP_TUNNEL_FOR_POP3_TEST COMMAND  ./${TEST_MAIN} ${TEST_JSON_DIR}/http_tunnel_for_pop3.json
+add_test(NAME STELLAR_HTTP_TUNNEL_FOR_POP3_TEST COMMAND  ./${TEST_MAIN} ${TEST_JSON_DIR}/http_tunnel_for_pop3.json 
          -r ${TEST_PCAP_DIR}/http_tunnel_for_pop3.pcap  WORKING_DIRECTORY ${TEST_RUN_DIR})
+
+add_test(NAME STELLAR_HTTP_TUNNEL_FOR_HTTP_TEST COMMAND  ./${TEST_MAIN} ${TEST_JSON_DIR}/http_tunnel_for_http.json 
+         -r ${TEST_PCAP_DIR}/http_tunnel_for_http.pcap  WORKING_DIRECTORY ${TEST_RUN_DIR})
 
 add_test(NAME STELLAR_HTTP_OVER_PPPOE_TEST COMMAND  ./${TEST_MAIN} ${TEST_JSON_DIR}/http_over_pppoe.json
          -r ${TEST_PCAP_DIR}/http_over_pppoe.pcap  WORKING_DIRECTORY ${TEST_RUN_DIR})
@@ -140,6 +145,7 @@ set_tests_properties(STELLAR_HTTP_GET_SINGLE_TRANS_TEST
                     STELLAR_HTTP_CHUNKED_RES_GZIP_TEST
                     STELLAR_HTTP_OVER_TCP_KEEPALIVE_TEST
                     STELLAR_HTTP_TUNNEL_FOR_POP3_TEST
+                    STELLAR_HTTP_TUNNEL_FOR_HTTP_TEST
                     STELLAR_HTTP_OVER_PPPOE_TEST
                     STELLAR_HTTP_OVER_TLS_TEST
                     STELLAR_NON_HTTP_TEST
@@ -160,8 +166,9 @@ set_tests_properties(STELLAR_HTTP_GET_SINGLE_TRANS_TEST
                     PROPERTIES FIXTURES_REQUIRED TestFixture)
 
 add_test(NAME UPDATE_STATE_PLUG_ENTRY COMMAND bash -c "sed -i 's/name=.*/name=\\x22http_decoder_test_state_entry\\x22/' ${TEST_RUN_DIR}/etc/http/gtest_entry.toml")
+add_test(NAME UPDATE_STATE_PLUG_TOPIC COMMAND bash -c "sed -i 's/topic=.*/topic=\\x22HTTP_DECODER_MESSAGE\\x22/' ${TEST_RUN_DIR}/etc/http/gtest_entry.toml")
 
-set_tests_properties(UPDATE_STATE_PLUG_ENTRY
+set_tests_properties(UPDATE_STATE_PLUG_ENTRY UPDATE_STATE_PLUG_TOPIC
                      PROPERTIES FIXTURES_SETUP TestState)
 
 add_test(NAME STELLAR_HTTP_MSG_TYPE_STATE_TEST COMMAND  ./${TEST_MAIN} ${TEST_JSON_DIR}/http_msg_type_state.json  
@@ -176,10 +183,29 @@ add_test(NAME STELLAR_HTTP_MSG_TYPE_STATE_SES_EXCEPTION_C2S_TEST COMMAND  ./${TE
         -r ${TEST_PCAP_DIR}/http_session_exception_c2s.pcap  WORKING_DIRECTORY ${TEST_RUN_DIR})    
 add_test(NAME STELLAR_HTTP_MSG_TYPE_STATE_SES_EXCEPTION_S2C_TEST COMMAND  ./${TEST_MAIN} ${TEST_JSON_DIR}/http_msg_type_state_exception_s2c.json
         -r ${TEST_PCAP_DIR}/http_session_exception_s2c.pcap  WORKING_DIRECTORY ${TEST_RUN_DIR})    
+add_test(NAME STELLAR_HTTP_MSG_TYPE_STATE_TUNNEL_TEST COMMAND  ./${TEST_MAIN} ${TEST_JSON_DIR}/http_msg_type_state_tunnel.json
+        -r ${TEST_PCAP_DIR}/http_tunnel_for_http.pcap  WORKING_DIRECTORY ${TEST_RUN_DIR})           
 set_tests_properties(STELLAR_HTTP_MSG_TYPE_STATE_TEST
                     STELLAR_HTTP_MSG_TYPE_STATE_C2S_TEST
                     STELLAR_HTTP_MSG_TYPE_STATE_S2C_TEST
                     STELLAR_HTTP_MSG_TYPE_STATE_PIPELINE_TEST
                     STELLAR_HTTP_MSG_TYPE_STATE_SES_EXCEPTION_C2S_TEST
                     STELLAR_HTTP_MSG_TYPE_STATE_SES_EXCEPTION_S2C_TEST
+                    STELLAR_HTTP_MSG_TYPE_STATE_TUNNEL_TEST
                     PROPERTIES FIXTURES_REQUIRED TestState)
+
+add_test(NAME UPDATE_TUNNEL_PLUG_ENTRY COMMAND bash -c "sed -i 's/name=.*/name=\\x22http_decoder_tunnel_entry\\x22/' ${TEST_RUN_DIR}/etc/http/gtest_entry.toml")
+add_test(NAME UPDATE_TUNNEL_PLUG_TOPIC COMMAND bash -c "sed -i 's/topic=.*/topic=\\x22HTTP_DECODER_TUNNEL_MESSAGE\\x22/' ${TEST_RUN_DIR}/etc/http/gtest_entry.toml")
+
+set_tests_properties(UPDATE_TUNNEL_PLUG_ENTRY UPDATE_TUNNEL_PLUG_TOPIC
+                     STELLAR_HTTP_DECODER_SO STELLAR_HTTP_DECODER_GTEST_SO
+                     PROPERTIES FIXTURES_SETUP TestTunnel)     
+
+add_test(NAME STELLAR_HTTP_MSG_TYPE_TUNNEL_POP3_TEST COMMAND  ./${TEST_MAIN} ${TEST_JSON_DIR}/http_inner_tunnel_for_pop3.json  
+        -r ${TEST_PCAP_DIR}/http_tunnel_for_pop3.pcap  WORKING_DIRECTORY ${TEST_RUN_DIR})        
+add_test(NAME STELLAR_HTTP_MSG_TYPE_TUNNEL_HTTP_TEST COMMAND  ./${TEST_MAIN} ${TEST_JSON_DIR}/http_inner_tunnel_for_http.json  
+        -r ${TEST_PCAP_DIR}/http_tunnel_for_http.pcap  WORKING_DIRECTORY ${TEST_RUN_DIR})     
+
+set_tests_properties(STELLAR_HTTP_MSG_TYPE_TUNNEL_POP3_TEST
+                     STELLAR_HTTP_MSG_TYPE_TUNNEL_HTTP_TEST   
+                     PROPERTIES FIXTURES_REQUIRED TestTunnel)                        

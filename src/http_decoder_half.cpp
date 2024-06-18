@@ -21,7 +21,7 @@ struct http_decoder_half_data
     size_t decompress_body_len;
 
     int joint_url_complete;
-    struct hstring joint_url; // http://<host>[:<port>]/<path>?<searchpart>
+    hstring joint_url; // http://<host>[:<port>]/<path>?<searchpart>
     long long transaction_index;
 };
 
@@ -42,7 +42,7 @@ struct http_decoder_half
 
     long long trans_counter;
     long long err_counter;
-    long long transaction_seq;
+    long long transaction_seq; //accumulated
 
     const char *data;
     int data_len;
@@ -77,9 +77,9 @@ http_decoder_half_data_decompress(struct http_decoder_half_data *data)
         return;
     }
 
-    struct hstring raw_body = {0};
+    hstring raw_body = {0};
     http_decoder_table_get_body(data->table, &raw_body);
-    if (raw_body.str == NULL || raw_body.str_len == 0)
+    if (raw_body.iov_base == NULL || raw_body.iov_len == 0)
     {
         return;
     }
@@ -90,8 +90,8 @@ http_decoder_half_data_decompress(struct http_decoder_half_data *data)
     }
 
     assert(data->decompress);
-    if (http_content_decompress_write(data->decompress, raw_body.str,
-                                      raw_body.str_len,
+    if (http_content_decompress_write(data->decompress, (char *)raw_body.iov_base,
+                                      raw_body.iov_len,
                                       &data->ref_decompress_body,
                                       &data->decompress_body_len) == -1)
     {
@@ -226,12 +226,12 @@ static int on_uri(llhttp_t *http, const char *at, size_t length)
     return 0;
 }
 
-static void http_decoder_cached_portion_url(struct http_decoder_half *half, const struct hstring *uri_result)
+static void http_decoder_cached_portion_url(struct http_decoder_half *half, const hstring *uri_result)
 {
     struct http_decoder_half_data *ref_data = half->ref_data;
     int uri_skip_len = 0;
 
-    if ((uri_result->str_len) > 7 && (strncasecmp("http://", uri_result->str, 7) == 0)) // absolute URI
+    if ((uri_result->iov_len) > 7 && (strncasecmp("http://", (char *)uri_result->iov_base, 7) == 0)) // absolute URI
     {
         uri_skip_len = strlen("http://");
         ref_data->joint_url_complete = 1;
@@ -241,9 +241,9 @@ static void http_decoder_cached_portion_url(struct http_decoder_half *half, cons
         ref_data->joint_url_complete = 0;
     }
 
-    ref_data->joint_url.str_len = uri_result->str_len - uri_skip_len;
-    ref_data->joint_url.str = MEMPOOL_CALLOC(half->http_ev_ctx->ref_mempool, char, ref_data->joint_url.str_len);
-    memcpy(ref_data->joint_url.str, uri_result->str + uri_skip_len, ref_data->joint_url.str_len);
+    ref_data->joint_url.iov_len = uri_result->iov_len - uri_skip_len;
+    ref_data->joint_url.iov_base = MEMPOOL_CALLOC(half->http_ev_ctx->ref_mempool, char, ref_data->joint_url.iov_len);
+    memcpy(ref_data->joint_url.iov_base, (char *)uri_result->iov_base + uri_skip_len, ref_data->joint_url.iov_len);
 }
 
 /* Information-only callbacks, return value is ignored */
@@ -261,9 +261,9 @@ static int on_uri_complete(llhttp_t *http)
 
     http_decoder_table_commit(half->ref_data->table, HTTP_ITEM_URI);
 
-    struct hstring uri_result = {};
+    hstring uri_result = {};
     http_decoder_table_get_uri(half->ref_data->table, &uri_result);
-    assert(uri_result.str);
+    assert(uri_result.iov_base);
     http_decoder_cached_portion_url(half, &uri_result);
 
     return 0;
@@ -408,17 +408,17 @@ static int on_header_value_complete(llhttp_t *http)
     if (half->ref_data->content_encoding == HTTP_CONTENT_ENCODING_NONE)
     {
         struct http_header http_hdr = {0};
-        struct hstring key = {.str = (char *)"Content-Encoding", .str_len = 16};
+        hstring key = {.iov_base = (char *)"Content-Encoding", .iov_len = 16};
 
         if (http_decoder_table_get_header(half->ref_data->table, &key, &http_hdr) == 0)
         {
             char encoding_str[MAX_ENCODING_STR_LEN + 1] = {0};
-            size_t str_len = http_hdr.val.str_len;
-            if (str_len > MAX_ENCODING_STR_LEN)
+            size_t iov_len = http_hdr.val.iov_len;
+            if (iov_len > MAX_ENCODING_STR_LEN)
             {
-                str_len = MAX_ENCODING_STR_LEN;
+                iov_len = MAX_ENCODING_STR_LEN;
             }
-            memcpy(encoding_str, http_hdr.val.str, str_len);
+            memcpy(encoding_str, http_hdr.val.iov_base, iov_len);
             half->ref_data->content_encoding = http_content_encoding_str2int(encoding_str);
         }
     }
@@ -539,8 +539,7 @@ static int on_body(llhttp_t *http, const char *at, size_t length)
     return 0;
 }
 
-static void http_decoder_half_init(struct http_decoder_half *half,
-                       http_event_cb *http_ev_cb, enum llhttp_type type)
+static void http_decoder_half_init(struct http_decoder_half *half, http_event_cb *http_ev_cb, enum llhttp_type type)
 {
     llhttp_settings_init(&half->settings);
     llhttp_init(&half->parser, type, &half->settings);
@@ -579,8 +578,9 @@ static void http_decoder_half_init(struct http_decoder_half *half,
     half->ref_data = NULL;
 }
 
-struct http_decoder_half * http_decoder_half_new(nmx_pool_t *mempool, http_event_cb *ev_cb, enum llhttp_type http_type,
-                                         int decompress_switch, struct http_decoder_env *httpd_env)
+struct http_decoder_half * http_decoder_half_new(struct http_decoder_exdata *hd_ctx, nmx_pool_t *mempool, 
+                                        http_event_cb *ev_cb, enum llhttp_type http_type,
+                                        int decompress_switch, struct http_decoder_env *httpd_env, long long start_seq)
 {
     struct http_decoder_half *half = MEMPOOL_CALLOC(mempool, struct http_decoder_half, 1);
     assert(half);
@@ -588,8 +588,9 @@ struct http_decoder_half * http_decoder_half_new(nmx_pool_t *mempool, http_event
     half->decompress_switch = decompress_switch;
     half->http_ev_ctx = MEMPOOL_CALLOC(mempool, struct http_event_context, 1);
     http_decoder_half_init(half, ev_cb, http_type);
-
+    half->http_ev_ctx->ref_httpd_ctx = hd_ctx;
     half->httpd_env = httpd_env;
+    half->transaction_seq = start_seq;
     return half;
 }
 
@@ -609,7 +610,7 @@ void http_decoder_half_free(nmx_pool_t *mempool, struct http_decoder_half *half)
     MEMPOOL_FREE(mempool, half);
 }
 
-void http_decoder_half_reinit(struct http_decoder_half *half, int topic_id,
+void http_decoder_half_reinit(struct http_decoder_half *half, 
                               struct http_decoder_result_queue *queue,
                               nmx_pool_t *mempool, struct session *sess)
 {
@@ -618,8 +619,6 @@ void http_decoder_half_reinit(struct http_decoder_half *half, int topic_id,
     {
         http_decoder_table_reinit(half->ref_data->table);
     }
-
-    half->http_ev_ctx->topic_id = topic_id;
     half->http_ev_ctx->ref_mempool = mempool;
     half->http_ev_ctx->ref_session = sess;
     half->http_ev_ctx->ref_queue = queue;
@@ -810,10 +809,10 @@ void http_decoder_half_data_free(nmx_pool_t *mempool, struct http_decoder_half_d
         data->decompress = NULL;
     }
 
-    if (data->joint_url.str)
+    if (data->joint_url.iov_base)
     {
-        MEMPOOL_FREE(mempool, data->joint_url.str);
-        data->joint_url.str = NULL;
+        MEMPOOL_FREE(mempool, data->joint_url.iov_base);
+        data->joint_url.iov_base = NULL;
         data->joint_url_complete = 0;
     }
     MEMPOOL_FREE(mempool, data);
@@ -846,7 +845,7 @@ int http_decoder_half_data_get_response_line(struct http_decoder_half_data *data
 }
 
 int http_decoder_half_data_get_header(const struct http_decoder_half_data *data,
-                                      const struct hstring *key,
+                                      const hstring *key,
                                       struct http_header *hdr_result)
 {
     return http_decoder_table_get_header(data->table, key, hdr_result);
@@ -877,7 +876,7 @@ int http_decoder_half_data_has_parsed_header(struct http_decoder_half_data *data
 }
 
 int http_decoder_half_data_get_raw_body(const struct http_decoder_half_data *data,
-                                        struct hstring *body)
+                                        hstring *body)
 {
     if (NULL == data || NULL == body)
     {
@@ -887,15 +886,15 @@ int http_decoder_half_data_get_raw_body(const struct http_decoder_half_data *dat
 }
 
 int http_decoder_half_data_get_decompress_body(const struct http_decoder_half_data *data,
-                                               struct hstring *body)
+                                               hstring *body)
 {
     if (HTTP_CONTENT_ENCODING_NONE == data->content_encoding)
     {
         return http_decoder_table_get_body(data->table, body);
     }
 
-    body->str = data->ref_decompress_body;
-    body->str_len = data->decompress_body_len;
+    body->iov_base = data->ref_decompress_body;
+    body->iov_len = data->decompress_body_len;
     return 0;
 }
 
@@ -923,17 +922,17 @@ static void using_session_addr_as_host(struct session *ref_session,
     char ip_string_buf[INET6_ADDRSTRLEN];
     if (SESSION_ADDR_TYPE_IPV4_TCP == ssaddr_type || SESSION_ADDR_TYPE_IPV4_UDP == ssaddr_type)
     {
-        host_result->val.str = MEMPOOL_CALLOC(mempool, char, (INET_ADDRSTRLEN + 7) /* "ip:port" max length */);
+        host_result->val.iov_base = MEMPOOL_CALLOC(mempool, char, (INET_ADDRSTRLEN + 7) /* "ip:port" max length */);
         inet_ntop(AF_INET, &ssaddr->ipv4.daddr, ip_string_buf, INET_ADDRSTRLEN);
-        sprintf(host_result->val.str, "%s:%u", ip_string_buf, ntohs(ssaddr->ipv4.dport));
-        host_result->val.str_len = strlen(host_result->val.str);
+        sprintf((char *)host_result->val.iov_base, "%s:%u", ip_string_buf, ntohs(ssaddr->ipv4.dport));
+        host_result->val.iov_len = strlen((char *)host_result->val.iov_base);
     }
     else if (SESSION_ADDR_TYPE_IPV6_TCP == ssaddr_type || SESSION_ADDR_TYPE_IPV6_UDP == ssaddr_type)
     {
-        host_result->val.str = MEMPOOL_CALLOC(mempool, char, (INET6_ADDRSTRLEN + 7) /* "ip:port" max length */);
+        host_result->val.iov_base = MEMPOOL_CALLOC(mempool, char, (INET6_ADDRSTRLEN + 7) /* "ip:port" max length */);
         inet_ntop(AF_INET6, &ssaddr->ipv6.daddr, ip_string_buf, INET6_ADDRSTRLEN);
-        sprintf(host_result->val.str, "%s:%u", ip_string_buf, ntohs(ssaddr->ipv6.dport));
-        host_result->val.str_len = strlen(host_result->val.str);
+        sprintf((char *)host_result->val.iov_base, "%s:%u", ip_string_buf, ntohs(ssaddr->ipv6.dport));
+        host_result->val.iov_len = strlen((char *)host_result->val.iov_base);
     }
     else
     {
@@ -944,28 +943,41 @@ static void using_session_addr_as_host(struct session *ref_session,
 void http_decoder_join_url(struct http_decoder_half_data *hfdata, nmx_pool_t *mempool, const struct http_header *host_hdr)
 {
     int append_slash_len = 0;
-    if ('/' != hfdata->joint_url.str[0])
+    if ('/' != ((char *)hfdata->joint_url.iov_base)[0])
     {
         append_slash_len = 1;
     }
-    int url_cache_str_len = host_hdr->val.str_len + hfdata->joint_url.str_len + append_slash_len;
+    int url_cache_str_len = host_hdr->val.iov_len + hfdata->joint_url.iov_len + append_slash_len;
     char *url_cache_str = MEMPOOL_CALLOC(mempool, char, url_cache_str_len);
 
     char *ptr = url_cache_str;
-    memcpy(ptr, host_hdr->val.str, host_hdr->val.str_len);
-    ptr += host_hdr->val.str_len;
+    memcpy(ptr, host_hdr->val.iov_base, host_hdr->val.iov_len);
+    ptr += host_hdr->val.iov_len;
     if (append_slash_len)
     {
         *ptr = '/';
         ptr++;
     }
-    memcpy(ptr, hfdata->joint_url.str, hfdata->joint_url.str_len);
+    memcpy(ptr, hfdata->joint_url.iov_base, hfdata->joint_url.iov_len);
 
-    MEMPOOL_FREE(mempool, hfdata->joint_url.str); // free the cached uri buffer
-    hfdata->joint_url.str = url_cache_str;
-    hfdata->joint_url.str_len = url_cache_str_len;
+    MEMPOOL_FREE(mempool, hfdata->joint_url.iov_base); // free the cached uri buffer
+    hfdata->joint_url.iov_base = url_cache_str;
+    hfdata->joint_url.iov_len = url_cache_str_len;
 
     hfdata->joint_url_complete = 1;
+}
+
+void http_decoder_get_url(struct http_decoder_half_data *hfdata, nmx_pool_t *mempool)
+{
+    struct http_request_line reqline = {};
+    http_decoder_half_data_get_request_line(hfdata, &reqline);
+    if(unlikely(strncasecmp_safe("CONNECT", (char *)reqline.method.iov_base, 7, reqline.method.iov_len) == 0))
+    {
+        hfdata->joint_url.iov_base = MEMPOOL_CALLOC(mempool, char, reqline.uri.iov_len+1);
+        memcpy(hfdata->joint_url.iov_base, reqline.uri.iov_base, reqline.uri.iov_len);
+        hfdata->joint_url.iov_len = reqline.uri.iov_len;
+        hfdata->joint_url_complete = 1;
+    }
 }
 
 int http_decoder_join_url_finally(struct http_event_context *ev_ctx,
@@ -981,14 +993,14 @@ int http_decoder_join_url_finally(struct http_event_context *ev_ctx,
 
     using_session_addr_as_host(ev_ctx->ref_session, &addr_as_host, mempool);
     http_decoder_join_url(hfdata, mempool, &addr_as_host);
-    MEMPOOL_FREE(mempool, addr_as_host.val.str); // free session addr to host buffer
+    MEMPOOL_FREE(mempool, addr_as_host.val.iov_base); // free session addr to host buffer
     return 1;
 }
 
 void http_decoder_get_host_feed_url(struct http_decoder_half *half)
 {
     struct http_header host_result = {};
-    struct hstring host_key = {(char *)"Host", 4};
+    hstring host_key = {(char *)"Host", 4};
     const char *host_refer_str = NULL;
     int host_refer_len = 0;
 
@@ -1007,14 +1019,14 @@ void http_decoder_get_host_feed_url(struct http_decoder_half *half)
     http_decoder_join_url(half->ref_data, half->http_ev_ctx->ref_mempool, &host_result);
 }
 
-int http_half_data_get_url(struct http_decoder_half_data *res_data, struct hstring *url)
+int http_half_data_get_url(struct http_decoder_half_data *res_data, hstring *url)
 {
     if (0 == res_data->joint_url_complete)
     {
         return -1;
     }
-    url->str = res_data->joint_url.str;
-    url->str_len = res_data->joint_url.str_len;
+    url->iov_base = res_data->joint_url.iov_base;
+    url->iov_len = res_data->joint_url.iov_len;
     return 0;
 }
 
@@ -1033,24 +1045,20 @@ int http_half_data_get_total_parsed_header_count(struct http_decoder_half_data *
     return http_decoder_table_get_total_parsed_header(half_data->table);
 }
 
-void http_half_pre_context_free(struct session *sess, struct http_decoder_env *httpd_env,
-                                   struct http_decoder_exdata *ex_data)
+void http_half_pre_context_free(struct session *sess, struct http_decoder_exdata *exdata)
 {
-    if (NULL == ex_data)
-    {
-        return;
-    }
     struct http_message *msg = NULL;
     struct http_decoder_half_data *req_data;
     struct http_decoder_half_data *res_data;
-    struct http_decoder_result_queue *queue = ex_data->queue;
+    struct http_decoder_result_queue *queue = exdata->queue;
+
     for(int i = 0; i < queue->queue_size; i++){
         req_data = queue->array[i].req_data;
         res_data = queue->array[i].res_data;
         if ((req_data != NULL) && (NULL == res_data) && (req_data->state < HTTP_EVENT_REQ_END))
         {
             msg = http_message_new(HTTP_TRANSACTION_FREE, queue, i, HTTP_REQUEST);
-            session_mq_publish_message(sess, httpd_env->httpd_msg_topic_id, msg);
+            session_mq_publish_message(sess, exdata->pub_topic_id, msg);
         }
     }
 
@@ -1059,7 +1067,7 @@ void http_half_pre_context_free(struct session *sess, struct http_decoder_env *h
         if ((res_data != NULL) && (res_data->state < HTTP_EVENT_RES_END))
         {
             msg = http_message_new(HTTP_TRANSACTION_FREE, queue, i, HTTP_RESPONSE);
-            session_mq_publish_message(sess, httpd_env->httpd_msg_topic_id, msg);
+            session_mq_publish_message(sess, exdata->pub_topic_id, msg);
         }
     }
 }
@@ -1067,4 +1075,11 @@ void http_half_pre_context_free(struct session *sess, struct http_decoder_env *h
 void http_half_update_state(struct http_decoder_half_data *hf_data, enum http_event state)
 {
     hf_data->state = state;
+}
+
+void http_half_get_max_transaction_seq(struct http_decoder_exdata *exdata, long long *max_req_seq, long long *max_res_seq)
+{
+    assert(exdata && max_req_seq && max_res_seq);
+    *max_req_seq = exdata->decoder->c2s_half->transaction_seq;
+    *max_res_seq = exdata->decoder->s2c_half->transaction_seq;
 }

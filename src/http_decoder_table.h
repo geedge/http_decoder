@@ -36,18 +36,18 @@ void http_decoder_table_reinit(struct http_decoder_table *table);
 
 void http_decoder_table_dump(struct http_decoder_table *table);
 
-int http_decoder_table_get_uri(const struct http_decoder_table *table, struct hstring *out);
+int http_decoder_table_get_uri(const struct http_decoder_table *table, hstring *out);
 
-int http_decoder_table_get_method(const struct http_decoder_table *table, struct hstring *out);
+int http_decoder_table_get_method(const struct http_decoder_table *table, hstring *out);
 
-int http_decoder_table_get_status(const struct http_decoder_table *table, struct hstring *out);
+int http_decoder_table_get_status(const struct http_decoder_table *table, hstring *out);
 
-int http_decoder_table_get_version(const struct http_decoder_table *table, struct hstring *out);
+int http_decoder_table_get_version(const struct http_decoder_table *table, hstring *out);
 
-int http_decoder_table_get_body(const struct http_decoder_table *table, struct hstring *out);
+int http_decoder_table_get_body(const struct http_decoder_table *table, hstring *out);
 
 int http_decoder_table_get_header(const struct http_decoder_table *table,
-                                  const struct hstring *key,
+                                  const hstring *key,
                                   struct http_header *hdr_res);
 
 int http_decoder_table_iter_header(struct http_decoder_table *table,

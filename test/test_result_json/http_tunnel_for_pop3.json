@@ -17,7 +17,7 @@
         "Proxy-Connection": "Keep-Alive",
         "Connection": "Keep-Alive",
         "Host": "192.168.10.144",
-        "__X_HTTP_URL": "192.168.10.144/pop.163.com:110"
+        "__X_HTTP_URL": "pop.163.com:110"
     },
     {
         "__X_HTTP_TRANSACTION": "response",
@@ -27,7 +27,6 @@
         "major_version": 1,
         "minor_version": 1,
         "status_code": 200,
-        "Proxy-agent": "CCProxy",
-        "__X_HTTP_PAYLOAD_MD5": "8a9716c4f06c88bb9482f50c25b39032"
+        "Proxy-agent": "CCProxy"
     }
 ]

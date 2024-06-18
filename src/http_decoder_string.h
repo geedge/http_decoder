@@ -44,9 +44,9 @@ enum string_state {
 
 //http decoder string
 struct http_decoder_string {
-    struct hstring refer; // shallow copy
-    struct hstring cache; // deep copy
-    struct hstring commit;
+    hstring refer; // shallow copy
+    hstring cache; // deep copy
+    hstring commit;
 
     enum string_state state;
     size_t max_cache_size;
@@ -68,7 +68,7 @@ void http_decoder_string_reinit(struct http_decoder_string *rstr);
 
 enum string_state http_decoder_string_state(const struct http_decoder_string *rstr);
 
-int http_decoder_string_get(const struct http_decoder_string *rstr, struct hstring *out);
+int http_decoder_string_get(const struct http_decoder_string *rstr, hstring *out);
 
 void http_decoder_string_dump(struct http_decoder_string *rstr, const char *desc);
 #endif

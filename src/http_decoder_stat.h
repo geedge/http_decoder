@@ -32,25 +32,19 @@ struct hd_stat_config_tuple
 
 struct hd_statistics
 {
-    // long long incoming_bytes;
-    // long long incoming_tcp_seg;
-    // long long session_new;
-    // long long session_free;
-    // long long transaction_new;
-    // long long transaction_free;
-    // long long incoming_trans;
-    // long long err_pkts;
-
+    long long time_ms[HTTPD_STAT_MAX];
     long long counter[HTTPD_STAT_MAX];
-    int batch; //call fieldstat_easy_counter_incrby() per batch
+    int batch[HTTPD_STAT_MAX]; //call fieldstat_easy_counter_incrby() per batch
 }__attribute__ ((aligned (64)));
 
 struct http_decoder_stat
 {
+    pthread_t timer_pid;
+    long long current_time_ms;
     struct fieldstat_easy *fse;
     int stat_interval_pkts; // call fieldstat_incrby every stat_interval_pkts
     int field_stat_id[HTTPD_STAT_MAX];
-    struct hd_statistics *stats; //multi thread    
+    struct hd_statistics *stats; //size is thread number    
 };
 
 int http_decoder_stat_init(struct http_decoder_stat *hd_stat, int thread_max, int stat_interval_pkts, int stat_interval_time);

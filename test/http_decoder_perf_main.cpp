@@ -24,6 +24,13 @@
 #define TIME_DIFF()
 #endif
 
+static struct http_topic_exdata_compose g_topic_exdata_set[] = 
+{
+    {HTTPD_TOPIC_TCP_STREAM_INDEX,  TOPIC_TCP_STREAM, NULL, NULL, "HTTP_DECODER_EXDATA_BASEON_TCP_STREAM", NULL, 0, 0},
+    {HTTPD_TOPIC_HTTP_MSG_INDEX,    HTTP_DECODER_TOPIC, NULL, NULL, NULL, NULL, 1, 1},
+    {HTTPD_TOPIC_HTTP_TUNNEL_INDEX, HTTP_DECODER_TUNNEL_TOPIC, NULL, NULL, "HTTP_DECODER_EXDATA_BASEON_HTTP_TUNNEL",  NULL, 2, 2},
+};
+
 struct packet{
     const char *payload;
     size_t payload_len;
@@ -43,6 +50,7 @@ struct stellar{
 
 struct session{
     struct stellar *st;
+    enum session_state sess_state;
     struct session_addr addr;
     void *context;
     void *exdata;
@@ -52,7 +60,7 @@ struct session{
 
 extern "C" void *http_decoder_init(struct stellar *st);
 extern "C" void http_decoder_exit(void *plugin_env);
-extern "C" void *_httpd_session_ctx_new_cb(struct session *sess, void *plugin_env);
+extern "C" void *httpd_session_ctx_new_cb(struct session *sess, void *plugin_env);
 extern "C" void _httpd_ex_data_free_cb(struct session *s, int idx,void *ex_data, void *arg);
 extern "C" void http_decoder_tcp_stream_msg_cb(struct session *sess, int topic_id, const void *msg, void *no_use_ctx, void *plugin_env);
 extern "C" void http_decoder_perf_entry(struct session *sess, int topic_id, const void *raw_msg, void *per_session_ctx, void *plugin_env);
@@ -84,6 +92,10 @@ int stellar_get_current_thread_id(struct stellar *st)
 {
     return 0;
 }
+int session_get_current_thread_id(struct session *sess)
+{
+    return 0;
+}
 int stellar_session_plugin_register(struct stellar *st, 
 									session_ctx_new_func session_ctx_new, 
 									session_ctx_free_func session_ctx_free, 
@@ -108,31 +120,31 @@ void *session_exdata_get(struct session *sess, int idx)
 
 enum session_state session_get_current_state(struct session *sess)
 {
-    return SESSION_STATE_ACTIVE;
+    return sess->sess_state;
 }
 
 int stellar_session_mq_get_topic_id(struct stellar *st, const char *topic_name)
 {
-    if(strcmp(topic_name, "HTTP_DECODER_MESSAGE") == 0){
-        return st->publish_topic_id;
+    for(int i = 0; i < HTTPD_TOPIC_INDEX_MAX; i++){
+        if(strcmp(topic_name, g_topic_exdata_set[i].topic_name) == 0){
+            return st->consumer_topid_id;
+        }
     }
-    if(strcmp(topic_name, "TCP_STREAM") == 0){
-        return st->consumer_topid_id;
-    }
-    assert(0);
     return -1;
 }
 
 int stellar_session_mq_create_topic(struct stellar *st, const char *topic_name, session_msg_free_cb_func *msg_free_cb, void *msg_free_arg)
 {
-    if(strcmp(topic_name, "HTTP_DECODER_MESSAGE") == 0){
-        st->publish_topic_id = 1;
-        st->publish_msg_free_cb = msg_free_cb;
-        return 1;
-    }
-    if(strcmp(topic_name, "TCP_STREAM") == 0){
-        st->consumer_topid_id = 2;
-        return 2;
+
+    for(int i = 0; i < HTTPD_TOPIC_INDEX_MAX; i++){
+        if(strcmp(topic_name, g_topic_exdata_set[i].topic_name) == 0){
+            st->consumer_topid_id = g_topic_exdata_set[i].sub_topic_id;
+            st->publish_msg_free_cb = msg_free_cb;
+            if(strcmp(topic_name, "TCP_STREAM") == 0){
+                st->publish_topic_id = g_topic_exdata_set[HTTPD_TOPIC_HTTP_MSG_INDEX].sub_topic_id;
+            }
+            return st->consumer_topid_id;
+        }
     }
     return -1;
 }
@@ -179,9 +191,14 @@ int session_is_symmetric(struct session *sess, unsigned char *flag)
     return 1;
 }
 
+int session_mq_ignore_message(struct session *sess, int topic_id, int plugin_id)
+{
+    return 0;
+}
+
 static void perf_test_init_per_session(struct session *sess)
 {
-    sess->context = _httpd_session_ctx_new_cb(sess, sess->st->plugin_env);
+    sess->context = httpd_session_ctx_new_cb(sess, sess->st->plugin_env);
 }
 
 static void perf_test_free_per_session(struct session *sess)
@@ -194,6 +211,7 @@ static void perf_test_loop(struct session *sess, struct packet *test_payload, in
     TIME_START();
     sess->current_payload_st = &test_payload[0];
     perf_test_init_per_session(sess);
+    sess->sess_state = SESSION_STATE_OPENING;
 
     for(int i = 0; i < test_payload_index_max; i++)
     {
@@ -201,7 +219,9 @@ static void perf_test_loop(struct session *sess, struct packet *test_payload, in
         http_decoder_tcp_stream_msg_cb(sess, sess->st->consumer_topid_id, test_payload[i].payload, NULL, sess->st->plugin_env);
         TIME_DIFF();
         fieldstat_easy_histogram_record(fs4_instance, 0, fs4_metric_id, tag, 1, time_diff_ns);
+        sess->sess_state = SESSION_STATE_ACTIVE;
     }
+    sess->sess_state = SESSION_STATE_CLOSING;
     perf_test_free_per_session(sess);
 }
 
@@ -321,7 +341,7 @@ static void init_test_data_long_long_url(struct packet *test_payload, int *index
 static void perf_stat_init(void)
 {
     fs4_instance = fieldstat_easy_new(1, "http_decoder_test", NULL, 0);
-    fieldstat_easy_enable_auto_output(fs4_instance, "./httpd_fs4.json", 1);
+    fieldstat_easy_enable_auto_output(fs4_instance, "./httpd_hisgram.json", 1);
 
     FS4_SIMPLE_HISGRAM_TAG.key = "simple";
     FS4_SIMPLE_HISGRAM_TAG.type = TAG_DOUBLE;
