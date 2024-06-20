@@ -30,7 +30,7 @@ enum http_event {
 };
 
 struct http_event_context {
-    int topic_id;
+    struct http_decoder_exdata *ref_httpd_ctx;
     nmx_pool_t *ref_mempool;
     struct session *ref_session;
     struct http_decoder_result_queue *ref_queue;
@@ -43,12 +43,12 @@ typedef void http_event_cb(enum http_event event, struct http_decoder_half_data 
                            struct http_event_context *ev_ctx, void *httpd_plugin_env);
 
 struct http_decoder_half *
-http_decoder_half_new(nmx_pool_t *mempool, http_event_cb *event_cb, enum llhttp_type http_type,
-                      int decompress_switch, struct http_decoder_env *httpd_env);
+http_decoder_half_new(struct http_decoder_exdata *hd_ctx, nmx_pool_t *mempool, http_event_cb *event_cb, 
+                    enum llhttp_type http_type, int decompress_switch, struct http_decoder_env *httpd_env,long long start_seq);
 
 void http_decoder_half_free(nmx_pool_t *mempool, struct http_decoder_half *half);
 
-void http_decoder_half_reinit(struct http_decoder_half *half, int topic_id,
+void http_decoder_half_reinit(struct http_decoder_half *half, 
                               struct http_decoder_result_queue *queue,
                               nmx_pool_t *mempool, struct session *sess);
 
@@ -69,32 +69,33 @@ int http_decoder_half_data_get_response_line(struct http_decoder_half_data *data
                                              struct http_response_line *line);
 
 int http_decoder_half_data_get_header(const struct http_decoder_half_data *data,
-                                      const struct hstring *key, struct http_header *hdr_res);
+                                      const hstring *key, struct http_header *hdr_res);
 
 int http_decoder_half_data_iter_header(struct http_decoder_half_data *data,
                                        struct http_header *header);
 int http_decoder_half_data_reset_header_iter(struct http_decoder_half_data *req_data);
 int http_decoder_half_data_has_parsed_header(struct http_decoder_half_data *data);
 
-int http_decoder_half_data_get_raw_body(const struct http_decoder_half_data *data, struct hstring *body);
+int http_decoder_half_data_get_raw_body(const struct http_decoder_half_data *data, hstring *body);
 
-int http_decoder_half_data_get_decompress_body(const struct http_decoder_half_data *data, struct hstring *body);
+int http_decoder_half_data_get_decompress_body(const struct http_decoder_half_data *data, hstring *body);
 
 void http_decoder_half_data_dump(struct http_decoder_half *half);
 
 void http_decoder_get_host_feed_url(struct http_decoder_half *half);
+void http_decoder_get_url(struct http_decoder_half_data *hfdata, nmx_pool_t *mempool);
 void http_decoder_join_url(struct http_decoder_half_data *hfdata,
                            nmx_pool_t *mempool,
                            const struct http_header *host_hdr);
 int http_decoder_join_url_finally(struct http_event_context *ev_ctx,
                                    struct http_decoder_half_data *hfdata,
                                    nmx_pool_t *mempool);
-int http_half_data_get_url(struct http_decoder_half_data *res_data, struct hstring *url);
+int http_half_data_get_url(struct http_decoder_half_data *res_data, hstring *url);
 int http_half_data_get_transaction_seq(struct http_decoder_half_data *hf_data);
 
 void http_half_data_update_commit_index(struct http_decoder_half_data * half_data);
-void http_half_pre_context_free(struct session *sess, struct http_decoder_env *httpd_env,
-                                   struct http_decoder_exdata *ex_data);
+void http_half_pre_context_free(struct session *sess, struct http_decoder_exdata *exdata);
 void http_half_update_state(struct http_decoder_half_data *hf_data, enum http_event state);      
-int http_half_data_get_total_parsed_header_count(struct http_decoder_half_data * half_data);                             
+int http_half_data_get_total_parsed_header_count(struct http_decoder_half_data * half_data);      
+void http_half_get_max_transaction_seq(struct http_decoder_exdata *exdata, long long *max_req_seq, long long *max_res_seq);                       
 #endif

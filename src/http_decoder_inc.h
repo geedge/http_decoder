@@ -31,6 +31,7 @@ extern "C"
 #include "http_decoder_result_queue.h"
 #include "http_decoder_utils.h"
 #include "http_decoder_stat.h"
+#include "http_decoder_tunnel.h"
 #include "fieldstat/fieldstat_easy.h"
 #include "toml/toml.h"
 
@@ -82,6 +83,7 @@ struct http_message
     enum http_message_type type;
     size_t queue_index;
     struct http_decoder_result_queue *ref_queue;
+    hstring tunnel_payload;
 };
 
 struct http_decoder
@@ -90,19 +92,45 @@ struct http_decoder
     struct http_decoder_half *s2c_half;
 };
 
+enum httpd_topic_index{
+    HTTPD_TOPIC_TCP_STREAM_INDEX = 0,
+    HTTPD_TOPIC_HTTP_MSG_INDEX,
+    HTTPD_TOPIC_HTTP_TUNNEL_INDEX,
+    HTTPD_TOPIC_INDEX_MAX,
+};  
+
 struct http_decoder_exdata
 {
+    int sub_topic_id; //tcp_stream
+    int pub_topic_id; //http message or http tunnel msg
     struct http_decoder_result_queue *queue;
     struct http_decoder *decoder;
     nmx_pool_t *mempool;
+    enum http_tunnel_state tunnel_state; 
+    int in_tunnel_is_http;
+};
+
+// struct http_decoder_context{
+//     int array_size;
+//     struct http_decoder_exdata **exdata_array; //raw tcp stream for http msg;  http tunnel for inner http transaction. 
+// };
+
+struct http_topic_exdata_compose{
+    enum httpd_topic_index index;
+    const char *topic_name;
+    on_session_msg_cb_func *on_msg_cb;
+    session_msg_free_cb_func *msg_free_cb;
+    const char *exdata_name;
+    session_exdata_free *exdata_free_cb;
+    int sub_topic_id; //as consumer 
+    int exdata_id;
 };
 
 struct http_decoder_env
 {
-    int plugin_id;
-    int httpd_msg_topic_id;
-    int ex_data_idx;
     struct stellar *st;
+    int plugin_id;
+    struct http_topic_exdata_compose topic_exdata_compose[HTTPD_TOPIC_INDEX_MAX];
     struct http_decoder_config hd_cfg;
     struct http_decoder_stat hd_stat;
 };
@@ -111,7 +139,7 @@ struct http_message;
 
 struct http_message *http_message_new(enum http_message_type type, struct http_decoder_result_queue *queue,
                                     int queue_index, unsigned char flow_type);
-
+int http_topic_exdata_compose_get_index(const struct http_decoder_env *httpd_env, int by_topic_id);
 #ifdef __cplusplus
 }
 #endif

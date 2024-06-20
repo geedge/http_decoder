@@ -76,30 +76,30 @@ void http_decoder_table_free(struct http_decoder_table *table)
     if (NULL == table) {
         return;
     }
-    if (table->uri.cache.str != NULL) {
-        FREE(table->uri.cache.str);
+    if (table->uri.cache.iov_base != NULL) {
+        FREE(table->uri.cache.iov_base);
     }
-    if (table->status.cache.str != NULL) {
-        FREE(table->status.cache.str);
+    if (table->status.cache.iov_base != NULL) {
+        FREE(table->status.cache.iov_base);
     }
-    if (table->method.cache.str != NULL) {
-        FREE(table->method.cache.str);
+    if (table->method.cache.iov_base != NULL) {
+        FREE(table->method.cache.iov_base);
     }
-    if (table->version.cache.str != NULL) {
-        FREE(table->version.cache.str);
+    if (table->version.cache.iov_base != NULL) {
+        FREE(table->version.cache.iov_base);
     }
-    if (table->body.cache.str != NULL) {
-        FREE(table->body.cache.str);
+    if (table->body.cache.iov_base != NULL) {
+        FREE(table->body.cache.iov_base);
     }
 
     if (table->headers != NULL) {
         for (size_t i = 0; i < table->header_cnt; i++) {
-            if (table->headers[i].key.cache.str != NULL) {
-                FREE(table->headers[i].key.cache.str);
+            if (table->headers[i].key.cache.iov_base != NULL) {
+                FREE(table->headers[i].key.cache.iov_base);
             }
 
-            if (table->headers[i].val.cache.str != NULL) {
-                FREE(table->headers[i].val.cache.str);
+            if (table->headers[i].val.cache.iov_base != NULL) {
+                FREE(table->headers[i].val.cache.iov_base);
             }
         }
 
@@ -381,7 +381,7 @@ void http_decoder_table_dump(struct http_decoder_table *table)
     }
 }
 
-int http_decoder_table_get_uri(const struct http_decoder_table *table, struct hstring *out)
+int http_decoder_table_get_uri(const struct http_decoder_table *table, hstring *out)
 {
     if (NULL == table || NULL == out) {
         return -1;
@@ -389,7 +389,7 @@ int http_decoder_table_get_uri(const struct http_decoder_table *table, struct hs
     return http_decoder_string_get(&table->uri, out);
 }
 
-int http_decoder_table_get_method(const struct http_decoder_table *table, struct hstring *out)
+int http_decoder_table_get_method(const struct http_decoder_table *table, hstring *out)
 {
     if (NULL == table || NULL == out) {
         return -1;
@@ -397,7 +397,7 @@ int http_decoder_table_get_method(const struct http_decoder_table *table, struct
     return http_decoder_string_get(&table->method, out);
 }
 
-int http_decoder_table_get_status(const struct http_decoder_table *table, struct hstring *out)
+int http_decoder_table_get_status(const struct http_decoder_table *table, hstring *out)
 {
     if (NULL == table || NULL == out) {
         return -1;
@@ -405,7 +405,7 @@ int http_decoder_table_get_status(const struct http_decoder_table *table, struct
     return http_decoder_string_get(&table->status, out);
 }
 
-int http_decoder_table_get_version(const struct http_decoder_table *table, struct hstring *out)
+int http_decoder_table_get_version(const struct http_decoder_table *table, hstring *out)
 {
     if (NULL == table || NULL == out) {
         return -1;
@@ -413,7 +413,7 @@ int http_decoder_table_get_version(const struct http_decoder_table *table, struc
     return http_decoder_string_get(&table->version, out);
 }
 
-int http_decoder_table_get_body(const struct http_decoder_table *table, struct hstring *out)
+int http_decoder_table_get_body(const struct http_decoder_table *table, hstring *out)
 {
     if (NULL == table || NULL == out) {
         return -1;
@@ -421,22 +421,22 @@ int http_decoder_table_get_body(const struct http_decoder_table *table, struct h
     return http_decoder_string_get(&table->body, out);
 }
 
-int http_decoder_table_get_header(const struct http_decoder_table *table, const struct hstring *key,
+int http_decoder_table_get_header(const struct http_decoder_table *table, const hstring *key,
                                   struct http_header *hdr_result)
 {
     for (size_t i = 0; i < table->header_cnt; i++) {
         const struct http_decoder_header *tmp_header = &table->headers[i];
-        if (tmp_header->key.commit.str_len != key->str_len) {
+        if (tmp_header->key.commit.iov_len != key->iov_len) {
             continue;
         }
 
         if (http_decoder_string_state(&tmp_header->key) == STRING_STATE_COMMIT &&
             http_decoder_string_state(&tmp_header->val) == STRING_STATE_COMMIT) {
-            struct hstring tmp_key;
+            hstring tmp_key;
             http_decoder_string_get(&tmp_header->key, &tmp_key);
 
-            if (tmp_key.str_len == key->str_len &&
-                (0 == strncasecmp(tmp_key.str, key->str, key->str_len))) {
+            if (tmp_key.iov_len == key->iov_len &&
+                (0 == strncasecmp((char *)tmp_key.iov_base, (char *)key->iov_base, key->iov_len))) {
                 http_decoder_string_get(&tmp_header->key, &hdr_result->key);
                 http_decoder_string_get(&tmp_header->val, &hdr_result->val);
                 return 0;
@@ -468,10 +468,10 @@ int http_decoder_table_iter_header(struct http_decoder_table *table,
         }
     }
 
-    hdr->key.str = NULL;
-    hdr->key.str_len = 0;
-    hdr->val.str = NULL;
-    hdr->val.str_len = 0;
+    hdr->key.iov_base = NULL;
+    hdr->key.iov_len = 0;
+    hdr->val.iov_base = NULL;
+    hdr->val.iov_len = 0;
 
     return -1;
 }

@@ -12,6 +12,17 @@ char *safe_dup(const char *str, size_t len)
     return dup;
 }
 
+int strncasecmp_safe(const char *fix_s1, const char *dyn_s2, size_t fix_n1, size_t dyn_n2)
+{
+    if (fix_s1 == NULL || dyn_s2 == NULL) {
+        return -1;
+    }
+    if(fix_n1 != dyn_n2){
+        return -1;
+    }
+    return strncasecmp(fix_s1, dyn_s2, fix_n1);
+}
+
 const char *http_message_type_to_string(enum http_message_type type)
 {
     const char *sname = "unknown_msg_type";
@@ -134,4 +145,13 @@ int http_event_is_req(enum http_event event)
         break;
     }
     return -1;
+}
+
+int stellar_session_mq_get_topic_id_reliable(struct stellar *st, const char *topic_name, session_msg_free_cb_func *msg_free_cb, void *msg_free_arg)
+{
+    int topic_id = stellar_session_mq_get_topic_id(st, topic_name);
+    if(topic_id < 0){
+        topic_id = stellar_session_mq_create_topic(st, topic_name, msg_free_cb, msg_free_arg);
+    }
+    return topic_id;
 }

@@ -35,8 +35,8 @@ void http_decoder_string_refer(struct http_decoder_string *rstr,
     switch (rstr->state) {
         case STRING_STATE_INIT:
         case STRING_STATE_CACHE:
-            rstr->refer.str = (char *)at;
-            rstr->refer.str_len = length;
+            rstr->refer.iov_base = (char *)at;
+            rstr->refer.iov_len = length;
             break;
         default:
             abort();
@@ -48,60 +48,60 @@ void http_decoder_string_refer(struct http_decoder_string *rstr,
 
 static void string_refer2cache(struct http_decoder_string *rstr)
 {
-    if (0 == rstr->refer.str_len) {
+    if (0 == rstr->refer.iov_len) {
         return;
     }
-    if (rstr->cache.str_len >= rstr->max_cache_size) {
+    if (rstr->cache.iov_len >= rstr->max_cache_size) {
         return;
     }
 
-    size_t length = rstr->cache.str_len + rstr->refer.str_len;
+    size_t length = rstr->cache.iov_len + rstr->refer.iov_len;
     if (length > rstr->max_cache_size) {
         length = rstr->max_cache_size;
     }
 
-    if (NULL == rstr->cache.str) {
-        rstr->cache.str = CALLOC(char, length + 1);
-        memcpy(rstr->cache.str, rstr->refer.str, length);
+    if (NULL == rstr->cache.iov_base) {
+        rstr->cache.iov_base = CALLOC(char, length + 1);
+        memcpy(rstr->cache.iov_base, rstr->refer.iov_base, length);
     } else {
-        rstr->cache.str = REALLOC(char, rstr->cache.str, length + 1);
-        memcpy(rstr->cache.str + rstr->cache.str_len, rstr->refer.str,
-               (length - rstr->cache.str_len));
+        rstr->cache.iov_base = REALLOC(char, rstr->cache.iov_base, length + 1);
+        memcpy((char *)rstr->cache.iov_base + rstr->cache.iov_len, rstr->refer.iov_base,
+               (length - rstr->cache.iov_len));
     }
 
-    rstr->cache.str_len = length;
-    rstr->refer.str = NULL;
-    rstr->refer.str_len = 0;
+    rstr->cache.iov_len = length;
+    rstr->refer.iov_base = NULL;
+    rstr->refer.iov_len = 0;
 }
 
 static void string_commit2cache(struct http_decoder_string *rstr)
 {
-    if (rstr->cache.str_len == rstr->commit.str_len &&
-        rstr->cache.str == rstr->commit.str) {
-        rstr->commit.str = NULL;
-        rstr->commit.str_len = 0;
+    if (rstr->cache.iov_len == rstr->commit.iov_len &&
+        rstr->cache.iov_base == rstr->commit.iov_base) {
+        rstr->commit.iov_base = NULL;
+        rstr->commit.iov_len = 0;
         return;
     }
 
     //Only http header key need to backward to cache
     size_t length = 0;
-    if (rstr->commit.str_len > rstr->max_cache_size) {
+    if (rstr->commit.iov_len > rstr->max_cache_size) {
         length = rstr->max_cache_size;
     } else {
-        length = rstr->commit.str_len;
+        length = rstr->commit.iov_len;
     }
 
     if (length > 0) {
-        if (NULL == rstr->cache.str) {
-            rstr->cache.str = CALLOC(char, length + 1);
+        if (NULL == rstr->cache.iov_base) {
+            rstr->cache.iov_base = CALLOC(char, length + 1);
         } else {
             abort();
         }
-        memcpy(rstr->cache.str, rstr->commit.str, length);
-        rstr->cache.str_len = length;
+        memcpy(rstr->cache.iov_base, rstr->commit.iov_base, length);
+        rstr->cache.iov_len = length;
 
-        rstr->commit.str = NULL;
-        rstr->commit.str_len = 0;
+        rstr->commit.iov_base = NULL;
+        rstr->commit.iov_len = 0;
     }
 }
 
@@ -136,24 +136,24 @@ void http_decoder_string_commit(struct http_decoder_string *rstr)
 
     switch (rstr->state) {
         case STRING_STATE_REFER:
-            if (rstr->cache.str_len) {
+            if (rstr->cache.iov_len) {
                 http_decoder_string_cache(rstr);
 
-                rstr->commit.str = rstr->cache.str;
-                rstr->commit.str_len = rstr->cache.str_len;
-                // not overwrite rstr->cache.str
+                rstr->commit.iov_base = rstr->cache.iov_base;
+                rstr->commit.iov_len = rstr->cache.iov_len;
+                // not overwrite rstr->cache.iov_base
             } else {
-                rstr->commit.str = rstr->refer.str;
-                rstr->commit.str_len = rstr->refer.str_len;
+                rstr->commit.iov_base = rstr->refer.iov_base;
+                rstr->commit.iov_len = rstr->refer.iov_len;
 
-                rstr->refer.str = NULL;
-                rstr->refer.str_len = 0;
+                rstr->refer.iov_base = NULL;
+                rstr->refer.iov_len = 0;
             }
             break;
         case STRING_STATE_CACHE:
-            rstr->commit.str = rstr->cache.str;
-            rstr->commit.str_len = rstr->cache.str_len;
-            // not overwrite rstr->cache.str
+            rstr->commit.iov_base = rstr->cache.iov_base;
+            rstr->commit.iov_len = rstr->cache.iov_len;
+            // not overwrite rstr->cache.iov_base
             break;
         default:
             //abort();
@@ -172,7 +172,7 @@ void http_decoder_string_reset(struct http_decoder_string *rstr)
     case STRING_STATE_REFER:
     case STRING_STATE_CACHE:
     case STRING_STATE_COMMIT:
-        FREE(rstr->cache.str);
+        FREE(rstr->cache.iov_base);
         memset(rstr, 0, sizeof(struct http_decoder_string));
         break;
     default:
@@ -197,20 +197,20 @@ void http_decoder_string_reinit(struct http_decoder_string *rstr)
     }
 
     if (rstr->state == STRING_STATE_COMMIT &&
-        rstr->cache.str == rstr->commit.str &&
-        rstr->cache.str_len == rstr->commit.str_len) {
+        rstr->cache.iov_base == rstr->commit.iov_base &&
+        rstr->cache.iov_len == rstr->commit.iov_len) {
         return;
     }
 
-    if (rstr->cache.str != NULL) {
-        FREE(rstr->cache.str);
-        rstr->cache.str_len = 0;
+    if (rstr->cache.iov_base != NULL) {
+        FREE(rstr->cache.iov_base);
+        rstr->cache.iov_len = 0;
     }
 
-    rstr->refer.str = NULL;
-    rstr->refer.str_len = 0;
-    rstr->commit.str = NULL;
-    rstr->commit.str_len = 0;
+    rstr->refer.iov_base = NULL;
+    rstr->refer.iov_len = 0;
+    rstr->commit.iov_base = NULL;
+    rstr->commit.iov_len = 0;
     rstr->state = STRING_STATE_INIT;
 }
 
@@ -219,18 +219,18 @@ enum string_state http_decoder_string_state(const struct http_decoder_string *rs
     return rstr->state;
 }
 
-int http_decoder_string_get(const struct http_decoder_string *rstr, struct hstring *out)
+int http_decoder_string_get(const struct http_decoder_string *rstr, hstring *out)
 {
     if (NULL == rstr || NULL == out) {
         return -1;
     }
 
     if (http_decoder_string_state(rstr) == STRING_STATE_COMMIT) {
-        out->str = rstr->commit.str;
-        out->str_len = rstr->commit.str_len;
+        out->iov_base = rstr->commit.iov_base;
+        out->iov_len = rstr->commit.iov_len;
     } else {
-        out->str = NULL;
-        out->str_len = 0;
+        out->iov_base = NULL;
+        out->iov_len = 0;
     }
 
     return 0;
@@ -242,15 +242,15 @@ void http_decoder_string_dump(struct http_decoder_string *rstr, const char *desc
         return;
     }
 
-    char *refer_str = safe_dup(rstr->refer.str, rstr->refer.str_len);
-    char *cache_str = safe_dup(rstr->cache.str, rstr->cache.str_len);
-    char *commit_str = safe_dup(rstr->commit.str, rstr->commit.str_len);
+    char *refer_str = safe_dup((char *)rstr->refer.iov_base, rstr->refer.iov_len);
+    char *cache_str = safe_dup((char *)rstr->cache.iov_base, rstr->cache.iov_len);
+    char *commit_str = safe_dup((char *)rstr->commit.iov_base, rstr->commit.iov_len);
 
-    printf("%s: state: %s, refer: {len: %02zu, str: %s}, cache: {len: %02zu, str: %s}, commit: {len: %02zu, str: %s}\n",
+    printf("%s: state: %s, refer: {len: %02zu, iov_base: %s}, cache: {len: %02zu, iov_base: %s}, commit: {len: %02zu, iov_base: %s}\n",
            desc, string_state_to_desc(rstr->state),
-           rstr->refer.str_len, refer_str,
-           rstr->cache.str_len, cache_str,
-           rstr->commit.str_len, commit_str);
+           rstr->refer.iov_len, refer_str,
+           rstr->cache.iov_len, cache_str,
+           rstr->commit.iov_len, commit_str);
 
     FREE(refer_str);
     FREE(cache_str);

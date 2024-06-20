@@ -1,5 +1,6 @@
 #include <assert.h>
 #include <stdio.h>
+#include <pthread.h>
 #include <unistd.h>
 #include "http_decoder_inc.h"
 
@@ -26,12 +27,31 @@ static const struct hd_stat_config_tuple g_httpd_stat_tuple[HTTPD_STAT_MAX] =
 
 void http_decoder_stat_free(struct http_decoder_stat *hd_stat)
 {
+    pthread_cancel(hd_stat->timer_pid);
+    void *join_res = NULL;
+    do{
+        pthread_join(hd_stat->timer_pid, &join_res);
+    }while(join_res != PTHREAD_CANCELED);
+
     if(hd_stat->stats != NULL){
         free(hd_stat->stats);
     }
     if(hd_stat->fse != NULL){
         fieldstat_easy_free(hd_stat->fse);
     }
+}
+
+static void *httpd_stat_timer_thread(void *arg)
+{
+    pthread_setname_np(pthread_self(), "http_decoder_timer_thread");
+    struct http_decoder_stat *hd_stat = (struct http_decoder_stat *)arg;
+    struct timespec res;
+    while(1){
+        clock_gettime(CLOCK_MONOTONIC, &res);
+        hd_stat->current_time_ms = (res.tv_sec * 1000) + (res.tv_nsec / 1000000);
+        usleep(800);
+    }
+    return NULL;
 }
 
 int http_decoder_stat_init(struct http_decoder_stat *hd_stat, int thread_max, int stat_interval_pkts, int stat_interval_time)
@@ -64,6 +84,8 @@ int http_decoder_stat_init(struct http_decoder_stat *hd_stat, int thread_max, in
         return -1;
     }
 
+    pthread_create(&hd_stat->timer_pid, NULL, httpd_stat_timer_thread, hd_stat);
+
     return 0;
 }
 
@@ -73,15 +95,16 @@ void http_decoder_stat_update(struct http_decoder_stat *hd_stat, int thread_id, 
     assert(thread_id >= 0);
     assert(type < HTTPD_STAT_MAX);
 
-    hd_stat->stats[thread_id].counter[type] += value;
-    hd_stat->stats[thread_id].batch++;
+    struct hd_statistics *cur_hds = &hd_stat->stats[thread_id];
 
-    if(hd_stat->stats[thread_id].batch >= hd_stat->stat_interval_pkts){
-         for(int i = 0; i < HTTPD_STAT_MAX; i++){
-            //update all type, maybe decrease performance ?
-            fieldstat_easy_counter_incrby(hd_stat->fse, thread_id, hd_stat->field_stat_id[i], NULL, 0, hd_stat->stats[thread_id].counter[i]);
-            hd_stat->stats[thread_id].counter[i] = 0;
-         }
-         hd_stat->stats[thread_id].batch = 0;
+    cur_hds->counter[type] += value;
+    cur_hds->batch[type]++;
+
+    if(cur_hds->batch[type] >= hd_stat->stat_interval_pkts 
+      || cur_hds->time_ms[type] + 1000 < hd_stat->current_time_ms){
+         fieldstat_easy_counter_incrby(hd_stat->fse, thread_id, hd_stat->field_stat_id[type], NULL, 0, cur_hds->counter[type]);
+         cur_hds->counter[type] = 0;
+         cur_hds->batch[type] = 0;
+         cur_hds->time_ms[type] = hd_stat->current_time_ms;
     }
 }
