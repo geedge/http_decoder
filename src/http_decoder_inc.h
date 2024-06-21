@@ -46,8 +46,8 @@ extern "C"
 #define MEMPOOL_REALLOC(pool)
 #define MEMPOOL_FREE(pool, p) nmx_pfree(pool, p)
 
-#define ENABLE_MEMPOOL 1
-#ifdef ENABLE_MEMPOOL
+#define ENABLE_MEMPOOL 0
+#if ENABLE_MEMPOOL
 #define HD_CALLOC(pool, type, number) MEMPOOL_CALLOC(pool, number, type)
 #define HD_FREE(pool, p) MEMPOOL_FREE(pool, p)
 #else

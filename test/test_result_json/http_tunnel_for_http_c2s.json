@@ -1,0 +1,31 @@
+[
+    {
+        "__X_HTTP_TUPLE4": "192.168.40.139.59234>192.168.38.83.8080"
+    },
+    {
+        "__X_HTTP_TRANSACTION": "request",
+        "__X_HTTP_TRANSACTION_SEQ": 0,
+        "method": "CONNECT",
+        "uri": "www.baidu.com:80",
+        "req_version": "1.1",
+        "major_version": 1,
+        "minor_version": 1,
+        "Host": "www.baidu.com:80",
+        "User-Agent": "curl/7.29.0",
+        "Proxy-Connection": "Keep-Alive",
+        "__X_HTTP_URL": "www.baidu.com:80"
+    },
+    {
+        "__X_HTTP_TRANSACTION": "request",
+        "__X_HTTP_TRANSACTION_SEQ": 1,
+        "method": "GET",
+        "uri": "/",
+        "req_version": "1.1",
+        "major_version": 1,
+        "minor_version": 1,
+        "User-Agent": "curl/7.29.0",
+        "Host": "www.baidu.com",
+        "Accept": "*/*",
+        "__X_HTTP_URL": "www.baidu.com/"
+    }
+]

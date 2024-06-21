@@ -6,9 +6,8 @@
 enum http_tunnel_state{
     HTTP_TUN_NON = 0,       // init, or not tunnel session
     HTTP_TUN_C2S_HDR_START, //CONNECT ...
-    HTTP_TUN_C2S_HDR_END,   //CONNECT request all heades end with \r\n
+    HTTP_TUN_C2S_END,       //CONNECT request end
     HTTP_TUN_S2C_START,     // HTTP 200 connet established
-    // HTTP_TUN_S2C_END,       // http response all heades end with \r\n
     HTTP_TUN_INNER_STARTING,   // http inner tunnel protocol starting
     HTTP_TUN_INNER_TRANS,   // http inner tunnel protocol transmitting 
 };

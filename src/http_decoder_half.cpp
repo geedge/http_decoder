@@ -1048,12 +1048,11 @@ int http_half_data_get_total_parsed_header_count(struct http_decoder_half_data *
 void http_half_pre_context_free(struct session *sess, struct http_decoder_exdata *exdata)
 {
     struct http_message *msg = NULL;
-    struct http_decoder_half_data *req_data;
     struct http_decoder_half_data *res_data;
     struct http_decoder_result_queue *queue = exdata->queue;
 
     for(int i = 0; i < queue->queue_size; i++){
-        req_data = queue->array[i].req_data;
+        struct http_decoder_half_data *req_data = queue->array[i].req_data;
         res_data = queue->array[i].res_data;
         if ((req_data != NULL) && (NULL == res_data) && (req_data->state < HTTP_EVENT_REQ_END))
         {

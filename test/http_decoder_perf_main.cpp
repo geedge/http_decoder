@@ -125,11 +125,15 @@ enum session_state session_get_current_state(struct session *sess)
 
 int stellar_session_mq_get_topic_id(struct stellar *st, const char *topic_name)
 {
-    for(int i = 0; i < HTTPD_TOPIC_INDEX_MAX; i++){
-        if(strcmp(topic_name, g_topic_exdata_set[i].topic_name) == 0){
-            return st->consumer_topid_id;
-        }
-    }
+    // for(int i = 0; i < HTTPD_TOPIC_INDEX_MAX; i++){
+    //     if(strcmp(topic_name, "TCP_STREAM") == 0){
+    //         st->consumer_topid_id = g_topic_exdata_set[HTTPD_TOPIC_TCP_STREAM_INDEX].sub_topic_id;
+    //         st->publish_topic_id = g_topic_exdata_set[HTTPD_TOPIC_HTTP_MSG_INDEX].sub_topic_id;
+    //     }        
+    //     if(strcmp(topic_name, g_topic_exdata_set[i].topic_name) == 0){
+    //         return st->consumer_topid_id;
+    //     }
+    // }
     return -1;
 }
 
@@ -138,12 +142,13 @@ int stellar_session_mq_create_topic(struct stellar *st, const char *topic_name, 
 
     for(int i = 0; i < HTTPD_TOPIC_INDEX_MAX; i++){
         if(strcmp(topic_name, g_topic_exdata_set[i].topic_name) == 0){
-            st->consumer_topid_id = g_topic_exdata_set[i].sub_topic_id;
-            st->publish_msg_free_cb = msg_free_cb;
+            if(strcmp(topic_name, HTTP_DECODER_TOPIC) == 0){
+                st->publish_msg_free_cb = msg_free_cb;
+            }
             if(strcmp(topic_name, "TCP_STREAM") == 0){
                 st->publish_topic_id = g_topic_exdata_set[HTTPD_TOPIC_HTTP_MSG_INDEX].sub_topic_id;
             }
-            return st->consumer_topid_id;
+            return g_topic_exdata_set[i].sub_topic_id;
         }
     }
     return -1;
@@ -177,7 +182,7 @@ int stellar_session_mq_subscribe(struct stellar *st, int topic_id, on_session_ms
 }
 int session_mq_publish_message(struct session *sess, int topic_id, void *msg)
 {
-    if(topic_id == sess->st->publish_topic_id){
+    if(topic_id == g_topic_exdata_set[HTTPD_TOPIC_HTTP_MSG_INDEX].sub_topic_id){
         http_decoder_perf_entry(sess, topic_id, msg, NULL, NULL);
         //maybe generate many messages for one packet, so free msg immediately
         sess->st->publish_msg_free_cb(sess, msg, NULL);
@@ -206,17 +211,17 @@ static void perf_test_free_per_session(struct session *sess)
     sess->st->free_func(sess, sess->st->exdata_id, sess->exdata, NULL);
 }
 
-static void perf_test_loop(struct session *sess, struct packet *test_payload, int test_payload_index_max, const struct fieldstat_tag *tag, int fs4_metric_id)
+static void perf_test_loop(struct stellar *st, struct session *sess, struct packet *test_payload, int test_payload_index_max, const struct fieldstat_tag *tag, int fs4_metric_id)
 {
-    TIME_START();
     sess->current_payload_st = &test_payload[0];
     perf_test_init_per_session(sess);
     sess->sess_state = SESSION_STATE_OPENING;
+    TIME_START();
 
     for(int i = 0; i < test_payload_index_max; i++)
     {
         sess->current_payload_st = &test_payload[i];
-        http_decoder_tcp_stream_msg_cb(sess, sess->st->consumer_topid_id, test_payload[i].payload, NULL, sess->st->plugin_env);
+        http_decoder_tcp_stream_msg_cb(sess, g_topic_exdata_set[HTTPD_TOPIC_TCP_STREAM_INDEX].sub_topic_id, test_payload[i].payload, NULL, sess->st->plugin_env);
         TIME_DIFF();
         fieldstat_easy_histogram_record(fs4_instance, 0, fs4_metric_id, tag, 1, time_diff_ns);
         sess->sess_state = SESSION_STATE_ACTIVE;
@@ -380,9 +385,9 @@ int main(int argc, char const *argv[])
     init_test_data_frag(test_payload_frag, &payload_index_frag);
 
     while(1){
-        perf_test_loop(&sess, test_payload_simple, payload_index_simple, &FS4_SIMPLE_HISGRAM_TAG, fs4_simple_id);
-        perf_test_loop(&sess, test_payload_long_long_url, payload_index_long_long_url, &FS4_LONG_LONG_URL_HISGRAM_TAG, fs4_long_long_url_id);
-        perf_test_loop(&sess, test_payload_frag, payload_index_frag, &FS4_FRAG_HISGRAM_TAG, fs4_frag_id);
+        perf_test_loop(&st, &sess, test_payload_simple, payload_index_simple, &FS4_SIMPLE_HISGRAM_TAG, fs4_simple_id);
+        perf_test_loop(&st, &sess, test_payload_long_long_url, payload_index_long_long_url, &FS4_LONG_LONG_URL_HISGRAM_TAG, fs4_long_long_url_id);
+        perf_test_loop(&st, &sess, test_payload_frag, payload_index_frag, &FS4_FRAG_HISGRAM_TAG, fs4_frag_id);
     }
     return 0;
 }

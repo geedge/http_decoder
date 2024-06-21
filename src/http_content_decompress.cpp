@@ -136,9 +136,8 @@ http_content_decompress_write_zlib(struct http_content_decompress *decompress,
     *outdata = NULL;
     *outdata_len = 0;
 
-    int ret = 0;
     do {
-        ret = inflate(z_stream_ptr, Z_NO_FLUSH);
+        int ret = inflate(z_stream_ptr, Z_NO_FLUSH);
         if (ret == Z_STREAM_ERROR || ret == Z_NEED_DICT
             || ret == Z_DATA_ERROR || ret == Z_MEM_ERROR) {
             (void)inflateEnd(z_stream_ptr);
@@ -182,9 +181,8 @@ http_content_decompress_write_br(struct http_content_decompress *decompress,
     *outdata = NULL;
     *outdata_len = 0;
 
-    int ret;
     for (;;) {
-        ret = BrotliDecoderDecompressStream(decompress->br_state, &available_in, 
+        int ret = BrotliDecoderDecompressStream(decompress->br_state, &available_in, 
                                             &next_in, &available_out, &next_out, 0);
         size_t have = decompress->buffer_size - available_out;
         if (have > 0) {

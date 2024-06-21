@@ -1,0 +1,15 @@
+[
+    {
+        "__X_HTTP_TUPLE4": "36.255.45.61.29079>68.28.1.153.80"
+    },
+    {
+        "__X_HTTP_TRANSACTION": "response",
+        "__X_HTTP_TRANSACTION_SEQ": 0,
+        "res_version": "1.0",
+        "res_status": "Connection Established",
+        "major_version": 1,
+        "minor_version": 0,
+        "status_code": 200,
+        "Proxy-agent": "Apache/2.0.55 (Unix) proxy_html/2.5"
+    }
+]

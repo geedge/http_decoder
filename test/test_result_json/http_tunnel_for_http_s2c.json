@@ -1,0 +1,36 @@
+[
+    {
+        "__X_HTTP_TUPLE4": "192.168.40.139.59234>192.168.38.83.8080"
+    },
+    {
+        "__X_HTTP_TRANSACTION": "response",
+        "__X_HTTP_TRANSACTION_SEQ": 0,
+        "res_version": "1.1",
+        "res_status": "Connection established",
+        "major_version": 1,
+        "minor_version": 1,
+        "status_code": 200,
+        "Proxy-agent": "CCProxy"
+    },
+    {
+        "__X_HTTP_TRANSACTION": "response",
+        "__X_HTTP_TRANSACTION_SEQ": 1,
+        "res_version": "1.1",
+        "res_status": "OK",
+        "major_version": 1,
+        "minor_version": 1,
+        "status_code": 200,
+        "Accept-Ranges": "bytes",
+        "Cache-Control": "private, no-cache, no-store, proxy-revalidate, no-transform",
+        "Connection": "keep-alive",
+        "Content-Length": "2381",
+        "Content-Type": "text/html",
+        "Date": "Mon, 08 Apr 2024 09:45:51 GMT",
+        "Etag": "\"588604c1-94d\"",
+        "Last-Modified": "Mon, 23 Jan 2017 13:27:29 GMT",
+        "Pragma": "no-cache",
+        "Server": "bfe/1.0.8.18",
+        "Set-Cookie": "BDORZ=27315; max-age=86400; domain=.baidu.com; path=/",
+        "__X_HTTP_PAYLOAD_MD5": "090fe607a5be1228362614ccaa088577"
+    }
+]

@@ -85,6 +85,10 @@ add_test(NAME STELLAR_HTTP_TUNNEL_FOR_POP3_TEST COMMAND  ./${TEST_MAIN} ${TEST_J
 
 add_test(NAME STELLAR_HTTP_TUNNEL_FOR_HTTP_TEST COMMAND  ./${TEST_MAIN} ${TEST_JSON_DIR}/http_tunnel_for_http.json 
          -r ${TEST_PCAP_DIR}/http_tunnel_for_http.pcap  WORKING_DIRECTORY ${TEST_RUN_DIR})
+add_test(NAME STELLAR_HTTP_TUNNEL_FOR_HTTP_C2S_TEST COMMAND  ./${TEST_MAIN} ${TEST_JSON_DIR}/http_tunnel_for_http_c2s.json 
+         -r ${TEST_PCAP_DIR}/http_tunnel_for_http_C2S.pcap  WORKING_DIRECTORY ${TEST_RUN_DIR})
+add_test(NAME STELLAR_HTTP_TUNNEL_FOR_HTTP_S2C_TEST COMMAND  ./${TEST_MAIN} ${TEST_JSON_DIR}/http_tunnel_for_http_s2c.json 
+         -r ${TEST_PCAP_DIR}/http_tunnel_for_http_S2C.pcap  WORKING_DIRECTORY ${TEST_RUN_DIR})
 
 add_test(NAME STELLAR_HTTP_OVER_PPPOE_TEST COMMAND  ./${TEST_MAIN} ${TEST_JSON_DIR}/http_over_pppoe.json
          -r ${TEST_PCAP_DIR}/http_over_pppoe.pcap  WORKING_DIRECTORY ${TEST_RUN_DIR})
@@ -137,6 +141,12 @@ add_test(NAME STELLAR_HTTP_HEADER_TRUNCATED_IN_KV_TEST COMMAND  ./${TEST_MAIN} $
 add_test(NAME STELLAR_HTTP_HEADER_TRUNCATED_AFTER_KV_TEST COMMAND  ./${TEST_MAIN} ${TEST_JSON_DIR}/http_hdr_truncated_after_kv.json
          -r ${TEST_PCAP_DIR}/http_hdr_truncated_after_kv.pcap  WORKING_DIRECTORY ${TEST_RUN_DIR})
 
+add_test(NAME STELLAR_HTTP_FIN_TEST COMMAND  ./${TEST_MAIN} ${TEST_JSON_DIR}/non_http.json
+         -r ${TEST_PCAP_DIR}/http_fin.pcap WORKING_DIRECTORY ${TEST_RUN_DIR})
+
+add_test(NAME STELLAR_HTTP_TUNNEL_ONLY_HDR_TEST COMMAND  ./${TEST_MAIN} ${TEST_JSON_DIR}/http_tunnel_s2c_only_hdr.json
+         -r ${TEST_PCAP_DIR}/http_tunnel_s2c_only_hdr.pcap WORKING_DIRECTORY ${TEST_RUN_DIR})
+
 set_tests_properties(STELLAR_HTTP_GET_SINGLE_TRANS_TEST
                     STELLAR_HTTP_GET_MULTI_TRANS_TEST
                     STELLAR_HTTP_GET_LONG_COOKIE_TEST
@@ -146,6 +156,8 @@ set_tests_properties(STELLAR_HTTP_GET_SINGLE_TRANS_TEST
                     STELLAR_HTTP_OVER_TCP_KEEPALIVE_TEST
                     STELLAR_HTTP_TUNNEL_FOR_POP3_TEST
                     STELLAR_HTTP_TUNNEL_FOR_HTTP_TEST
+                    STELLAR_HTTP_TUNNEL_FOR_HTTP_C2S_TEST
+                    STELLAR_HTTP_TUNNEL_FOR_HTTP_S2C_TEST
                     STELLAR_HTTP_OVER_PPPOE_TEST
                     STELLAR_HTTP_OVER_TLS_TEST
                     STELLAR_NON_HTTP_TEST
@@ -163,6 +175,8 @@ set_tests_properties(STELLAR_HTTP_GET_SINGLE_TRANS_TEST
                     STELLAR_HTTP_TRANS_PIPELINE_TEST
                     STELLAR_HTTP_HEADER_TRUNCATED_IN_KV_TEST
                     STELLAR_HTTP_HEADER_TRUNCATED_AFTER_KV_TEST
+                    STELLAR_HTTP_FIN_TEST
+                    STELLAR_HTTP_TUNNEL_ONLY_HDR_TEST
                     PROPERTIES FIXTURES_REQUIRED TestFixture)
 
 add_test(NAME UPDATE_STATE_PLUG_ENTRY COMMAND bash -c "sed -i 's/name=.*/name=\\x22http_decoder_test_state_entry\\x22/' ${TEST_RUN_DIR}/etc/http/gtest_entry.toml")
@@ -184,7 +198,11 @@ add_test(NAME STELLAR_HTTP_MSG_TYPE_STATE_SES_EXCEPTION_C2S_TEST COMMAND  ./${TE
 add_test(NAME STELLAR_HTTP_MSG_TYPE_STATE_SES_EXCEPTION_S2C_TEST COMMAND  ./${TEST_MAIN} ${TEST_JSON_DIR}/http_msg_type_state_exception_s2c.json
         -r ${TEST_PCAP_DIR}/http_session_exception_s2c.pcap  WORKING_DIRECTORY ${TEST_RUN_DIR})    
 add_test(NAME STELLAR_HTTP_MSG_TYPE_STATE_TUNNEL_TEST COMMAND  ./${TEST_MAIN} ${TEST_JSON_DIR}/http_msg_type_state_tunnel.json
-        -r ${TEST_PCAP_DIR}/http_tunnel_for_http.pcap  WORKING_DIRECTORY ${TEST_RUN_DIR})           
+        -r ${TEST_PCAP_DIR}/http_tunnel_for_http.pcap  WORKING_DIRECTORY ${TEST_RUN_DIR})          
+add_test(NAME STELLAR_HTTP_MSG_TYPE_STATE_TUNNEL_C2S_TEST COMMAND  ./${TEST_MAIN} ${TEST_JSON_DIR}/http_msg_type_state_tunnel_c2s.json
+        -r ${TEST_PCAP_DIR}/http_tunnel_for_http_C2S.pcap  WORKING_DIRECTORY ${TEST_RUN_DIR})   
+add_test(NAME STELLAR_HTTP_MSG_TYPE_STATE_TUNNEL_S2C_TEST COMMAND  ./${TEST_MAIN} ${TEST_JSON_DIR}/http_msg_type_state_tunnel_s2c.json
+        -r ${TEST_PCAP_DIR}/http_tunnel_for_http_S2C.pcap  WORKING_DIRECTORY ${TEST_RUN_DIR})    
 set_tests_properties(STELLAR_HTTP_MSG_TYPE_STATE_TEST
                     STELLAR_HTTP_MSG_TYPE_STATE_C2S_TEST
                     STELLAR_HTTP_MSG_TYPE_STATE_S2C_TEST
@@ -192,6 +210,8 @@ set_tests_properties(STELLAR_HTTP_MSG_TYPE_STATE_TEST
                     STELLAR_HTTP_MSG_TYPE_STATE_SES_EXCEPTION_C2S_TEST
                     STELLAR_HTTP_MSG_TYPE_STATE_SES_EXCEPTION_S2C_TEST
                     STELLAR_HTTP_MSG_TYPE_STATE_TUNNEL_TEST
+                    STELLAR_HTTP_MSG_TYPE_STATE_TUNNEL_C2S_TEST
+                    STELLAR_HTTP_MSG_TYPE_STATE_TUNNEL_S2C_TEST
                     PROPERTIES FIXTURES_REQUIRED TestState)
 
 add_test(NAME UPDATE_TUNNEL_PLUG_ENTRY COMMAND bash -c "sed -i 's/name=.*/name=\\x22http_decoder_tunnel_entry\\x22/' ${TEST_RUN_DIR}/etc/http/gtest_entry.toml")

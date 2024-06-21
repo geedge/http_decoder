@@ -16,6 +16,7 @@ static const struct hd_stat_config_tuple g_httpd_stat_tuple[HTTPD_STAT_MAX] =
     {HTTPD_STAT_SESSION_NEW, "session_new"},
     {HTTPD_STAT_SESSION_FREE, "session_free"},
     {HTTPD_STAT_SESSION_EXCEPTION, "sess_exception"},
+    {HTTPD_STAT_TUNNEL, "tunnel"},
     {HTTPD_STAT_TRANSACTION_NEW, "trans_new"},
     {HTTPD_STAT_TRANSACTION_FREE, "trans_free"},
     {HTTPD_STAT_ASYMMETRY_SESSION_C2S, "asymmetry_sess_c2s"},

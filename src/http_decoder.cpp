@@ -86,6 +86,7 @@ static void http_event_handler(enum http_event event, struct http_decoder_half_d
         session_mq_publish_message(ev_ctx->ref_session, exdata->pub_topic_id, msg);
         if(httpd_tunnel_identify(PACKET_DIRECTION_C2S, half_data)){
             exdata->tunnel_state = HTTP_TUN_C2S_HDR_START;
+            http_decoder_stat_update(&httpd_env->hd_stat, thread_id, HTTPD_STAT_TUNNEL, 1); 
         }
         http_decoder_get_url(half_data, mempool);
         break;
@@ -112,17 +113,6 @@ static void http_event_handler(enum http_event event, struct http_decoder_half_d
         hstring tmp_url = {};
         http_half_data_get_url(half_data, &tmp_url);
         http_decoder_stat_update(&httpd_env->hd_stat, thread_id, HTTPD_STAT_URL_BYTES, tmp_url.iov_len);
-
-        if(httpd_is_tunnel_session(exdata)){
-            session_is_symmetric(ev_ctx->ref_session, &flow_flag);
-            if(SESSION_SEEN_C2S_FLOW == flow_flag){
-                exdata->tunnel_state = HTTP_TUN_INNER_STARTING;
-                http_half_pre_context_free(ev_ctx->ref_session, exdata);
-                exdata->pub_topic_id = httpd_env->topic_exdata_compose[HTTPD_TOPIC_HTTP_TUNNEL_INDEX].sub_topic_id;
-            }else{
-                exdata->tunnel_state = HTTP_TUN_C2S_HDR_END;
-            }
-        }
     }
     break;
     case HTTP_EVENT_REQ_BODY_BEGIN:
@@ -139,11 +129,20 @@ static void http_event_handler(enum http_event event, struct http_decoder_half_d
     case HTTP_EVENT_REQ_END:
     {
         session_is_symmetric(ev_ctx->ref_session, &flow_flag);
+
         if(SESSION_SEEN_C2S_FLOW == flow_flag){
             msg = http_message_new(HTTP_TRANSACTION_FREE, queue, queue_idx, HTTP_REQUEST);
             session_mq_publish_message(ev_ctx->ref_session, exdata->pub_topic_id, msg);
             http_decoder_stat_update(&httpd_env->hd_stat, thread_id, HTTPD_STAT_TRANSACTION_FREE, 1);
             http_decoder_stat_update(&httpd_env->hd_stat, thread_id, HTTPD_STAT_ASYMMETRY_TRANSACTION_C2S, 1);
+        }
+        if(httpd_is_tunnel_session(exdata)){
+            if(SESSION_SEEN_C2S_FLOW == flow_flag){
+                exdata->tunnel_state = HTTP_TUN_INNER_STARTING;
+                exdata->pub_topic_id = httpd_env->topic_exdata_compose[HTTPD_TOPIC_HTTP_TUNNEL_INDEX].sub_topic_id;
+            }else{
+                exdata->tunnel_state = HTTP_TUN_C2S_END;
+            }
         }
         http_half_update_state(half_data, event);
         http_decoder_result_queue_inc_req_index(queue);
@@ -216,13 +215,12 @@ static void http_event_handler(enum http_event event, struct http_decoder_half_d
 
         int tot_s2c_headers = http_half_data_get_total_parsed_header_count(half_data); 
         http_decoder_stat_update(&httpd_env->hd_stat, thread_id, HTTPD_STAT_HEADERS_S2C, tot_s2c_headers);
-
+        
         if(httpd_is_tunnel_session(exdata)){
             exdata->tunnel_state = HTTP_TUN_INNER_STARTING;
             http_half_pre_context_free(ev_ctx->ref_session, exdata);
             exdata->pub_topic_id = httpd_env->topic_exdata_compose[HTTPD_TOPIC_HTTP_TUNNEL_INDEX].sub_topic_id;
-            // http_decoder_push_tunnel_data(ev_ctx->ref_session, exdata, HTTP_TUNNEL_OPENING);
-        }
+        } 
     }
         break;
     case HTTP_EVENT_RES_BODY_BEGIN:
@@ -243,6 +241,7 @@ static void http_event_handler(enum http_event event, struct http_decoder_half_d
         if(SESSION_SEEN_S2C_FLOW == flow_flag){
             http_decoder_stat_update(&httpd_env->hd_stat, thread_id, HTTPD_STAT_ASYMMETRY_TRANSACTION_S2C, 1);
         }
+
         http_half_update_state(half_data, event);
         http_decoder_result_queue_inc_res_index(queue);
         half_data = http_decoder_result_queue_pop_res(queue);
@@ -625,7 +624,7 @@ extern "C"
             case HTTP_TUNNEL_OPENING:
             {
                 if(NULL != exdata){
-                    //not support nested http tunnel
+                    //not support nested http tunnel 
                     session_mq_ignore_message(sess, topic_id, httpd_env->plugin_id);
                     return;
                 }
@@ -642,21 +641,26 @@ extern "C"
                     exdata->pub_topic_id = httpd_env->topic_exdata_compose[HTTPD_TOPIC_HTTP_MSG_INDEX].sub_topic_id;
                     exdata->in_tunnel_is_http = 1;
                 }else{
-                    exdata = CALLOC(struct http_decoder_exdata, 1);
-                    exdata->decoder = NULL;
-                    exdata->pub_topic_id = -1;
-                    exdata->in_tunnel_is_http = 0;
-                    session_exdata_set(sess, httpd_env->topic_exdata_compose[HTTPD_TOPIC_HTTP_TUNNEL_INDEX].exdata_id, exdata);
-                    //do nothing, but can't call stellar_session_plugin_dettach_current_session() !!!
+                    //inner tunnel is not http, do nothing, do not push this message again !!!
+                    session_mq_ignore_message(sess, topic_id, httpd_env->plugin_id);
                     return;
                 }
             }
             break;
 
             case HTTP_TUNNEL_ACTIVE:
+                if(NULL == exdata){
+                    session_mq_ignore_message(sess, topic_id, httpd_env->plugin_id);
+                    http_decoder_stat_update(&httpd_env->hd_stat, session_get_current_thread_id(sess), HTTPD_STAT_PARSE_ERR, 1);  
+                    return;
+                }            
             break;
 
             case HTTP_TUNNEL_CLOSING:
+                if(NULL == exdata){
+                    http_decoder_stat_update(&httpd_env->hd_stat, session_get_current_thread_id(sess), HTTPD_STAT_PARSE_ERR, 1);  
+                    return;
+                }                
                 if(exdata->in_tunnel_is_http){
                     http_half_pre_context_free(sess, exdata);
                 }
@@ -689,11 +693,20 @@ extern "C"
             break;
 
             case SESSION_STATE_ACTIVE:
+            if(NULL == exdata){
+                session_mq_ignore_message(sess, topic_id, httpd_env->plugin_id);
+                http_decoder_stat_update(&httpd_env->hd_stat, session_get_current_thread_id(sess), HTTPD_STAT_PARSE_ERR, 1);  
+                return;
+            }
             //go on
             break;
 
             case SESSION_STATE_CLOSING:
             {
+                if(NULL == exdata){
+                    http_decoder_stat_update(&httpd_env->hd_stat, session_get_current_thread_id(sess), HTTPD_STAT_PARSE_ERR, 1);  
+                    return;
+                }                
                 if(httpd_in_tunnel_transmitting(exdata)){
                     http_decoder_push_tunnel_data(sess, exdata, HTTP_TUNNEL_CLOSING);
                 }else{

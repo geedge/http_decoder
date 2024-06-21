@@ -16,7 +16,6 @@ set(TEST_RUN_DIR /home/mesasoft/sapp_run)
 include_directories(${CMAKE_SOURCE_DIR}/include)
 include_directories(${CMAKE_SOURCE_DIR}/src)
 include_directories(${CMAKE_SOURCE_DIR}/deps)
-# include_directories(/usr/local/include/cjson)
 include_directories(/opt/tsg/framework/include/)
 include_directories(/opt/MESA/include/MESA)
 include_directories(${CMAKE_BINARY_DIR}/vendor/vbuild/include)
@@ -28,5 +27,3 @@ aux_source_directory(${PROJECT_SOURCE_DIR}/src PERF_TEST_DEP_SRC)
 
 add_executable(httpd_perf_test ${PERF_TEST_DEP_SRC} http_decoder_perf_main.cpp http_decoder_perf_plug.cpp)
 target_link_libraries(httpd_perf_test z brotlidec llhttp-static fieldstat4 pthread)
-
-#add_test(NAME INSTALL_PERF_TEST_MAIN COMMAND sh -c "cp ${CMAKE_CURRENT_BINARY_DIR}/httpd_perf_test ${TEST_RUN_DIR}/httpd_perf_test")
