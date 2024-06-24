@@ -65,6 +65,9 @@ extern "C"
 #define HTTPD_CFG_FILE   "./etc/http/http_decoder.toml"
 #define FILEDSTAT_OUTPUT_FILE   "./http_decoder.fs4"
 
+#define HTTP_CTX_NOT_HTTP "__NOT_HTTP_SESS__"
+#define HTTP_CTX_IS_HTTP  "__FAKE_HTTP_CTX__"
+
 struct http_decoder_config
 {
     int decompress_switch;

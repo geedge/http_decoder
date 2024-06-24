@@ -2,11 +2,11 @@ variables:
   GIT_STRATEGY: "clone"
   BUILD_PADDING_PREFIX: /tmp/padding_for_CPACK_RPM_BUILD_SOURCE_DIRS_PREFIX_PREFIX_PREFIX_PREFIX_PREFIX_PREFIX/
   BUILD_IMAGE_CENTOS8: "git.mesalab.cn:7443/mesa_platform/build-env:rockylinux"
-  INSTALL_DEPENDENCY_LIBRARY: sapp sapp-devel framework_env libMESA_prof_load-devel libasan
+  INSTALL_DEPENDENCY_LIBRARY: sapp-devel framework_env libMESA_prof_load-devel libasan
                               libMESA_htable-devel libMESA_jump_layer libMESA_jump_layer-devel
                               libMESA_handle_logger-devel libMESA_field_stat2-devel
                               libfieldstat3-devel libfieldstat4-devel libbreakpad_mini-devel
-                              zlib-devel brotli brotli-devel stellar-on-sapp-devel stellar-on-sapp systemd-devel
+                              zlib-devel brotli brotli-devel stellar-on-sapp-devel systemd-devel
   SYMBOL_TARGET: http_decoder
   TEST_NAME: gtest_http_decoder
   INSTALL_PREFIX: "/opt/tsg/"
@@ -118,13 +118,29 @@ release_build_for_centos8:
 ###############################################################################
 # test 
 ###############################################################################
-test_in_centos8:
+
+.install_rpm_package: &install_rpm_package
+    - rpm -e sapp || true 
+    - rpm -e sapp-devel || true 
+    - rpm -e stellar-on-sapp || true
+    - rpm -e stellar-on-sapp-devel || true
+    - rpm -ivh /tmp/sapp.x86_64.rpm --prefix=${INSTALL_PREFIX}/sapp --force --nodeps
+    - rpm -ivh /tmp/sapp-devel.x86_64.rpm --prefix=${INSTALL_PREFIX}/sapp --force --nodeps
+    - rpm -ivh /tmp/stellar-on-sapp.x86_64.rpm --prefix=${INSTALL_PREFIX} --force --nodeps 
+    - rpm -qa | grep sapp
+    - rpm -qa | grep stellar-on-sapp
+    - ls -l /opt/MESA/lib && echo "/opt/MESA/lib" >> /etc/ld.so.conf
+
+history_version_test:
   stage: test
   image: $BUILD_IMAGE_CENTOS8
   allow_failure: false
   script:
     - *everything_before_script
-    - ls -l /opt/MESA/lib && echo "/opt/MESA/lib" >> /etc/ld.so.conf
+    - mv -f ./vendor/stellar-on-sapp*.rpm /tmp/stellar-on-sapp.x86_64.rpm
+    - mv -f ./vendor/sapp-devel*.rpm /tmp/sapp-devel.x86_64.rpm
+    - mv -f ./vendor/sapp-4*.rpm /tmp/sapp.x86_64.rpm
+    - *install_rpm_package
     - cd build; make test
   dependencies:
     - develop_build_for_centos8
@@ -132,6 +148,23 @@ test_in_centos8:
   tags:
     - share     
 
+latest_version_test:
+  stage: test
+  image: $BUILD_IMAGE_CENTOS8
+  allow_failure: false
+  script:
+    - *everything_before_script
+    - yumdownloader stellar-on-sapp sapp-devel sapp
+    - mv stellar-on-sapp*.rpm /tmp/stellar-on-sapp.x86_64.rpm
+    - mv sapp-devel*.rpm /tmp/sapp-devel.x86_64.rpm
+    - mv sapp-4*.rpm /tmp/sapp.x86_64.rpm
+    - *install_rpm_package
+    - cd build; make test
+  dependencies:
+    - develop_build_for_centos8
+    - release_build_for_centos8
+  tags:
+    - share   
 ###############################################################################
 # upload 
 ###############################################################################

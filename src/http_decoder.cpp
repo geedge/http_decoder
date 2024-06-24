@@ -545,11 +545,11 @@ extern "C"
             if (ret < 0)
             {
                 stellar_session_plugin_dettach_current_session(sess);
-                return (void *)"__not_http_session__";
+                return (void *)HTTP_CTX_NOT_HTTP;
             }
         }
 
-        return (void *)"__fake_http_decoder_ctx__";
+        return (void *)HTTP_CTX_IS_HTTP;
     }
 
     void httpd_session_ctx_free_cb(struct session *sess, void *session_ctx, void *plugin_env)
@@ -557,7 +557,7 @@ extern "C"
         if(NULL == plugin_env || NULL == session_ctx){
             return;
         }
-        if(strncmp((const char *)session_ctx, "__not_http_session__", strlen("__not_http_session__")) == 0){
+        if(strncmp((const char *)session_ctx, HTTP_CTX_NOT_HTTP, strlen(HTTP_CTX_NOT_HTTP)) == 0){
             return;
         }
         struct http_decoder_env *httpd_env = (struct http_decoder_env *)plugin_env;

@@ -1,8 +1,7 @@
 set(DECODER_NAME http_decoder)
 
-set(TEST_RUN_DIR /home/mesasoft/sapp_run)
-set(SAPP_DEVEL_DIR /home/mesasoft/sapp_run/lib)
-set(STELLAR_ON_SAPP_LIB_DIR /opt/tsg/sapp/plug/stellar_on_sapp)
+set(TEST_RUN_DIR ${CMAKE_INSTALL_PREFIX}/sapp)
+set(SAPP_DEVEL_DIR ${TEST_RUN_DIR}/lib)
 set(TEST_MAIN plugin_test_main)
 
 include_directories(${CMAKE_SOURCE_DIR}/include)
@@ -13,6 +12,7 @@ include_directories(/opt/MESA/include/MESA)
 
 #various ways to add -rdynamic for centos7, centos8, and different cmake version
 add_definitions(-rdynamic)
+link_directories(${SAPP_DEVEL_DIR})
 add_executable(plugin_test_main plugin_test_main.cpp)
 set_target_properties(plugin_test_main 
     PROPERTIES 
@@ -25,7 +25,6 @@ set_target_properties(plugin_test_main
     "-rdynamic" 
     )
 set(LINK_FLAGS "-rdynamic")
-link_directories(${SAPP_DEVEL_DIR}/lib)
 target_link_libraries(plugin_test_main gtest cjson-static sapp_devel pthread pcap MESA_htable MESA_field_stat2 MESA_htable MESA_prof_load MESA_handle_logger MESA_jump_layer breakpad_mini fieldstat3 fieldstat4 systemd )
 
 # assemble test env
@@ -45,13 +44,11 @@ add_test(NAME UPDATE_GTEST_PLUG_ENTRY COMMAND bash -c "sed -i 's/name=.*/name=\\
 add_test(NAME UPDATE_GTEST_PLUG_TOPIC COMMAND bash -c "sed -i 's/topic=.*/topic=\\x22HTTP_DECODER_MESSAGE\\x22/' ${TEST_RUN_DIR}/etc/http/gtest_entry.toml")
 
 # update plugin to be tested
-# add_test(NAME STELLAR_ON_SAPP_SO COMMAND sh -c "cp ${STELLAR_ON_SAPP_LIB_DIR}/stellar_on_sapp.so ${TEST_RUN_DIR}/plug/stellar_on_sapp/stellar_on_sapp.so")
-add_test(NAME STELLAR_ON_SAPP_SO COMMAND sh -c "rpm -ql stellar-on-sapp | grep stellar_on_sapp.so | xargs -i cp -f {} ${TEST_RUN_DIR}/plug/stellar_on_sapp/stellar_on_sapp.so")
 add_test(NAME STELLAR_HTTP_DECODER_SO COMMAND sh -c "cp ${CMAKE_BINARY_DIR}/src/${DECODER_NAME}.so ${TEST_RUN_DIR}/stellar_plugin/${DECODER_NAME}.so")
 add_test(NAME STELLAR_HTTP_DECODER_GTEST_SO COMMAND sh -c "cp ${CMAKE_BINARY_DIR}/test/${DECODER_NAME}_test.so ${TEST_RUN_DIR}/stellar_plugin/${DECODER_NAME}_test.so")
 
 set_tests_properties(STELLAR_INSTALL_TEST_MAIN  STELLAR_COPY_SPEC STELLAR_COPY_CONFLIST STELLAR_COPY_START_LOADER_INF STELLAR_COPY_DEFER_LOADER_INF STELLAR_COPY_HTTP_DECODER_CONF  STELLAR_COPY_HTTP_GTEST_ENTRY_CONF 
-                    STELLAR_ON_SAPP_SO STELLAR_HTTP_DECODER_SO STELLAR_HTTP_DECODER_GTEST_SO STELLAR_UPDATE_SAPP_LOG_LEVEL STELLAR_UPDATE_SAPP_SYN_MODE STELLAR_ENABLE_SAPP_MONITOR 
+                    STELLAR_HTTP_DECODER_SO STELLAR_HTTP_DECODER_GTEST_SO STELLAR_UPDATE_SAPP_LOG_LEVEL STELLAR_UPDATE_SAPP_SYN_MODE STELLAR_ENABLE_SAPP_MONITOR 
                     UPDATE_GTEST_PLUG_ENTRY  UPDATE_GTEST_PLUG_TOPIC
                     PROPERTIES FIXTURES_SETUP TestFixture)
 
