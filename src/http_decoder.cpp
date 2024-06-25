@@ -796,14 +796,14 @@ static const struct http_topic_exdata_compose g_topic_exdata_compose[HTTPD_TOPIC
             goto failed;
         }
         
-        printf("http decoder init succ, plugin id:%d \n", httpd_env->plugin_id);
-        for(int i = 0; i < HTTPD_TOPIC_INDEX_MAX; i++){
-            printf("\ttopic_name:%s, topic_id:%d, ex_data_name:%s, exdata_id:%d\n", 
-                    httpd_env->topic_exdata_compose[i].topic_name, 
-                    httpd_env->topic_exdata_compose[i].sub_topic_id, 
-                    httpd_env->topic_exdata_compose[i].exdata_name,
-                    httpd_env->topic_exdata_compose[i].exdata_id);
-        }
+        // printf("http decoder init succ, plugin id:%d \n", httpd_env->plugin_id);
+        // for(int i = 0; i < HTTPD_TOPIC_INDEX_MAX; i++){
+        //     printf("\ttopic_name:%s, topic_id:%d, ex_data_name:%s, exdata_id:%d\n", 
+        //             httpd_env->topic_exdata_compose[i].topic_name, 
+        //             httpd_env->topic_exdata_compose[i].sub_topic_id, 
+        //             httpd_env->topic_exdata_compose[i].exdata_name,
+        //             httpd_env->topic_exdata_compose[i].exdata_id);
+        // }
         return httpd_env;
 
     failed:
