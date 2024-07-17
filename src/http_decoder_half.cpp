@@ -21,7 +21,9 @@ struct http_decoder_half_data
     size_t decompress_body_len;
 
     int joint_url_complete;
+    int url_is_encoded;
     hstring joint_url; // http://<host>[:<port>]/<path>?<searchpart>
+    hstring decoded_url;
     long long transaction_index;
 };
 
@@ -639,7 +641,7 @@ static void publish_message_for_parsed_header(struct http_decoder_half *half)
     return;
 }
 
-int http_decoder_half_parse(struct http_decoder_half *half, const char *data, size_t data_len)
+int http_decoder_half_parse(int proxy_enable, struct http_decoder_half *half, const char *data, size_t data_len)
 {
     assert(half && data);
 
@@ -659,7 +661,9 @@ int http_decoder_half_parse(struct http_decoder_half *half, const char *data, si
         llhttp_resume(&half->parser);
         break;
     case HPE_PAUSED_UPGRADE:
-        llhttp_resume_after_upgrade(&half->parser);
+        if(proxy_enable){
+            llhttp_resume_after_upgrade(&half->parser);
+        }
         ret = 0;
         break;
     default:
@@ -964,6 +968,15 @@ void http_decoder_join_url(struct http_decoder_half_data *hfdata, nmx_pool_t *me
     hfdata->joint_url.iov_base = url_cache_str;
     hfdata->joint_url.iov_len = url_cache_str_len;
 
+    hfdata->url_is_encoded = httpd_url_is_encoded(url_cache_str, url_cache_str_len);
+    if(hfdata->url_is_encoded){
+        hfdata->decoded_url.iov_base = MEMPOOL_CALLOC(mempool, char, url_cache_str_len);
+        httpd_url_decode(url_cache_str, url_cache_str_len, (char *)hfdata->decoded_url.iov_base, &hfdata->decoded_url.iov_len);
+    }else{
+        hfdata->decoded_url.iov_base = url_cache_str;
+        hfdata->decoded_url.iov_len = url_cache_str_len;
+    }
+
     hfdata->joint_url_complete = 1;
 }
 
@@ -1029,6 +1042,16 @@ int http_half_data_get_url(struct http_decoder_half_data *res_data, hstring *url
     url->iov_len = res_data->joint_url.iov_len;
     return 0;
 }
+int http_half_data_get_decode_url(struct http_decoder_half_data *res_data, hstring *url)
+{
+    if (0 == res_data->joint_url_complete)
+    {
+        return -1;
+    }
+    url->iov_base = res_data->decoded_url.iov_base;
+    url->iov_len = res_data->decoded_url.iov_len;
+    return 0;
+}
 
 int http_half_data_get_transaction_seq(struct http_decoder_half_data *hf_data)
 {
@@ -1056,7 +1079,7 @@ void http_half_pre_context_free(struct session *sess, struct http_decoder_exdata
         res_data = queue->array[i].res_data;
         if ((req_data != NULL) && (NULL == res_data) && (req_data->state < HTTP_EVENT_REQ_END))
         {
-            msg = http_message_new(HTTP_TRANSACTION_FREE, queue, i, HTTP_REQUEST);
+            msg = http_message_new(HTTP_TRANSACTION_END, queue, i, HTTP_REQUEST);
             session_mq_publish_message(sess, exdata->pub_topic_id, msg);
         }
     }
@@ -1065,7 +1088,7 @@ void http_half_pre_context_free(struct session *sess, struct http_decoder_exdata
         res_data = queue->array[i].res_data;
         if ((res_data != NULL) && (res_data->state < HTTP_EVENT_RES_END))
         {
-            msg = http_message_new(HTTP_TRANSACTION_FREE, queue, i, HTTP_RESPONSE);
+            msg = http_message_new(HTTP_TRANSACTION_END, queue, i, HTTP_RESPONSE);
             session_mq_publish_message(sess, exdata->pub_topic_id, msg);
         }
     }

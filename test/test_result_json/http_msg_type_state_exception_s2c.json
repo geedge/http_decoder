@@ -1,6 +1,6 @@
 [
     {
-        "msg_0": "HTTP_TRANSACTION_NEW_transaction_0",
+        "msg_0": "HTTP_TRANSACTION_START_transaction_0",
         "msg_1": "HTTP_MESSAGE_REQ_LINE",
         "msg_2": "HTTP_MESSAGE_REQ_HEADER",
         "msg_3": "HTTP_MESSAGE_REQ_HEADER_END"
@@ -9,7 +9,8 @@
         "msg_4": "HTTP_MESSAGE_RES_LINE",
         "msg_5": "HTTP_MESSAGE_RES_HEADER",
         "msg_6": "HTTP_MESSAGE_RES_HEADER_END",
-        "msg_7": "HTTP_MESSAGE_RES_BODY",
-        "msg_8": "HTTP_TRANSACTION_FREE_transaction_0"
+        "msg_7": "HTTP_MESSAGE_RES_BODY_START",
+        "msg_8": "HTTP_MESSAGE_RES_BODY",
+        "msg_9": "HTTP_TRANSACTION_END_transaction_0"
     }
 ]

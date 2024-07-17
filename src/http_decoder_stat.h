@@ -44,6 +44,7 @@ struct http_decoder_stat
     long long current_time_ms;
     struct fieldstat_easy *fse;
     int stat_interval_pkts; // call fieldstat_incrby every stat_interval_pkts
+    int stat_interval_time; //second
     int field_stat_id[HTTPD_STAT_MAX];
     struct hd_statistics *stats; //size is thread number    
 };

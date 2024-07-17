@@ -1,12 +1,13 @@
 [
     {
-        "msg_0": "HTTP_TRANSACTION_NEW_transaction_0",
+        "msg_0": "HTTP_TRANSACTION_START_transaction_0",
         "msg_1": "HTTP_MESSAGE_REQ_LINE",
         "msg_2": "HTTP_MESSAGE_REQ_HEADER",
         "msg_3": "HTTP_MESSAGE_REQ_HEADER_END",
-        "msg_4": "HTTP_MESSAGE_REQ_BODY"
+        "msg_4": "HTTP_MESSAGE_REQ_BODY_START",
+        "msg_5": "HTTP_MESSAGE_REQ_BODY"
     },
     {
-        "msg_5": "HTTP_TRANSACTION_FREE_transaction_0"
+        "msg_6": "HTTP_TRANSACTION_END_transaction_0"
     }
 ]

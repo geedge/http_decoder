@@ -28,12 +28,9 @@ static const struct hd_stat_config_tuple g_httpd_stat_tuple[HTTPD_STAT_MAX] =
 
 void http_decoder_stat_free(struct http_decoder_stat *hd_stat)
 {
-    pthread_cancel(hd_stat->timer_pid);
-    void *join_res = NULL;
-    do{
-        pthread_join(hd_stat->timer_pid, &join_res);
-    }while(join_res != PTHREAD_CANCELED);
-
+    if(hd_stat->timer_pid != 0){
+        pthread_cancel(hd_stat->timer_pid);
+    }
     if(hd_stat->stats != NULL){
         free(hd_stat->stats);
     }
@@ -71,22 +68,25 @@ int http_decoder_stat_init(struct http_decoder_stat *hd_stat, int thread_max, in
         if (hd_stat->field_stat_id[i] < 0)
         {
             fprintf(stderr, "fieldstat_easy_register_counter %s failed.", g_httpd_stat_tuple[i].name);
+            fieldstat_easy_free(hd_stat->fse);
+            hd_stat->fse = NULL;
             return -1;
         }
     }
-
-    hd_stat->stats = (struct hd_statistics *)calloc(thread_max, sizeof(struct hd_statistics));
-    hd_stat->stat_interval_pkts = stat_interval_pkts;
    
     int ret = fieldstat_easy_enable_auto_output(hd_stat->fse, FILEDSTAT_OUTPUT_FILE, stat_interval_time);
     if (ret < 0)
     {
         fprintf(stderr, "fieldstat_easy_enable_auto_output failed.");
+        fieldstat_easy_free(hd_stat->fse);
+        hd_stat->fse = NULL;        
         return -1;
     }
-
+    hd_stat->stats = (struct hd_statistics *)calloc(thread_max, sizeof(struct hd_statistics));
+    hd_stat->stat_interval_pkts = stat_interval_pkts;
+    hd_stat->stat_interval_time = stat_interval_time;
     pthread_create(&hd_stat->timer_pid, NULL, httpd_stat_timer_thread, hd_stat);
-
+    pthread_detach(hd_stat->timer_pid);
     return 0;
 }
 
@@ -95,6 +95,10 @@ void http_decoder_stat_update(struct http_decoder_stat *hd_stat, int thread_id, 
     assert(hd_stat);
     assert(thread_id >= 0);
     assert(type < HTTPD_STAT_MAX);
+
+    if(unlikely(hd_stat->stats == NULL)){
+        return;
+    }
 
     struct hd_statistics *cur_hds = &hd_stat->stats[thread_id];
 

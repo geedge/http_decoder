@@ -13,8 +13,12 @@ struct http_tunnel_message
 };
 
 
-int httpd_tunnel_identify(int curdir, struct http_decoder_half_data *hfdata)
+int httpd_tunnel_identify(struct http_decoder_env *httpd_env, int curdir, struct http_decoder_half_data *hfdata)
 {
+    if(0 == httpd_env->hd_cfg.proxy_enable){
+        return 0;
+    }
+
     if(PACKET_DIRECTION_C2S == curdir){
         struct http_request_line reqline = {};
         http_decoder_half_data_get_request_line(hfdata, &reqline);

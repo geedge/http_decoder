@@ -16,6 +16,7 @@
 extern "C"
 {
 #endif
+#include <bits/types/struct_iovec.h>
 #include "stellar/stellar.h"
 #include "stellar/utils.h"
 #include "stellar/session.h"
@@ -63,7 +64,7 @@ extern "C"
 #define DEFAULT_MEMPOOL_SIZE (32 * 1024)
 
 #define HTTPD_CFG_FILE   "./etc/http/http_decoder.toml"
-#define FILEDSTAT_OUTPUT_FILE   "./http_decoder.fs4"
+#define FILEDSTAT_OUTPUT_FILE   "./metrics/http_decoder_fs4.json"
 
 #define HTTP_CTX_NOT_HTTP "__NOT_HTTP_SESS__"
 #define HTTP_CTX_IS_HTTP  "__FAKE_HTTP_CTX__"
@@ -73,6 +74,7 @@ struct http_decoder_config
     int decompress_switch;
     int stat_interval_pkts; // call fieldstat_incrby every stat_interval_pkts
     int stat_output_interval;
+    int proxy_enable;
     size_t result_queue_len; // per session result queue length
     size_t mempool_size;     // per session mempool size
 };

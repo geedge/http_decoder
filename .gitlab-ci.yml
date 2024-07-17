@@ -4,9 +4,9 @@ variables:
   BUILD_IMAGE_CENTOS8: "git.mesalab.cn:7443/mesa_platform/build-env:rockylinux"
   INSTALL_DEPENDENCY_LIBRARY: sapp-devel framework_env libMESA_prof_load-devel libasan
                               libMESA_htable-devel libMESA_jump_layer libMESA_jump_layer-devel
-                              libMESA_handle_logger-devel libMESA_field_stat2-devel
-                              libfieldstat3-devel libfieldstat4-devel libbreakpad_mini-devel
-                              zlib-devel brotli brotli-devel stellar-on-sapp-devel systemd-devel
+                              libMESA_handle_logger-devel libfieldstat4-devel libfieldstat4 libbreakpad_mini-devel
+                              zlib-devel brotli brotli-devel stellar-on-sapp-devel systemd-devel 
+                              libMESA_field_stat2-devel libfieldstat3-devel libMESA_field_stat2 libfieldstat3
   SYMBOL_TARGET: http_decoder
   TEST_NAME: gtest_http_decoder
   INSTALL_PREFIX: "/opt/tsg/"

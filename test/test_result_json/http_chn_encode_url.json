@@ -1,0 +1,42 @@
+[
+    {
+        "__X_HTTP_TUPLE4": "2607:5d00:2:2::38:2.56343>240e:928:101:80::80.80"
+    },
+    {
+        "__X_HTTP_TRANSACTION": "request",
+        "__X_HTTP_TRANSACTION_SEQ": 0,
+        "method": "GET",
+        "uri": "/%E6%B5%8B%E8%AF%95%E4%B8%AD%E6%96%87URL%E7%BC%96%E8%A7%A3%E7%A0%81",
+        "req_version": "1.1",
+        "major_version": 1,
+        "minor_version": 1,
+        "Host": "www.airchina.com.cn",
+        "Connection": "keep-alive",
+        "DNT": "1",
+        "Upgrade-Insecure-Requests": "1",
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36",
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
+        "Accept-Encoding": "gzip, deflate",
+        "Accept-Language": "zh-CN,zh;q=0.9,en;q=0.8",
+        "Cookie": "_gcl_au=1.1.240068387.1720059437; _ga_CGYVD7S4G4=GS1.1.1720059448.3.0.1720059453.0.0.0; HMF_CI=7967e38cc3874dbbefa260b8dcbee31fa827a01fc2b7073105a5e05f4a1ea361c74f6d4c37fb199bfc9470036f06fb537da2a74e96450b7949e0b686f0569f9680; HMY_JC=84f9c8a99e076ee2dda5ba48cd953f61c4dc2707823205d8171c8818eea9d60fda,; _ga=GA1.3.822493162.1711101509; _gid=GA1.3.304369429.1721120134; arialoadData=true; ariawapChangeViewPort=false; C3VK=be8842; HBB_HC=faa7f3e2477e14525534a5560ed6a307b29ae2c324e1f631a428e53fb74c9d72575c155d682554ba15cc9e52afe31218b1; mbox=check#true#1721120252|session#1721120133635-517642#1721122052; s_pers=%20s_fid%3D52863027521849CD-3A72894997C48527%7C1878886591105%3B; s_sess=%20s_cc%3Dtrue%3B",
+        "__X_HTTP_URL": "www.airchina.com.cn/%E6%B5%8B%E8%AF%95%E4%B8%AD%E6%96%87URL%E7%BC%96%E8%A7%A3%E7%A0%81",
+        "__X_HTTP_DECODED_URL": "www.airchina.com.cn/测试中文URL编解码"
+    },
+    {
+        "__X_HTTP_TRANSACTION": "response",
+        "__X_HTTP_TRANSACTION_SEQ": 0,
+        "res_version": "1.1",
+        "res_status": "Moved Temporarily",
+        "major_version": 1,
+        "minor_version": 1,
+        "status_code": 302,
+        "Date": "Tue, 16 Jul 2024 08:57:32 GMT",
+        "Content-Length": "0",
+        "Connection": "keep-alive",
+        "Server": "waf/4.39.0-0.el7",
+        "Location": "https://www.airchina.com.cn/%E6%B5%8B%E8%AF%95%E4%B8%AD%E6%96%87URL%E7%BC%96%E8%A7%A3%E7%A0%81",
+        "x-ws-origin-error": "-",
+        "X-Via": "1.1 PSjsczBGPiv194:0 (Cdn Cache Server V2.0), 1.1 PStjdxpn34:6 (Cdn Cache Server V2.0)",
+        "X-Ws-Request-Id": "669635fc_PStjdxks32_7630-15285"
+    }
+]

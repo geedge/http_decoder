@@ -13,3 +13,6 @@ stat_interval_pkts=1000
 
 # fieldstat output interval
 stat_output_interval=1
+
+# connect tunnel
+proxy_enable=0

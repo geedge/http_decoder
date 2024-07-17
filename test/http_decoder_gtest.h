@@ -1,7 +1,16 @@
 #pragma once
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+#include <stellar/session.h>
+#include <stellar/session_mq.h>
+#include <stellar/session_exdata.h>
+#include <stellar/stellar.h>
+#ifdef __cplusplus
+}
+#endif
 #include "http_decoder.h"
-#include "stellar/session.h"
-#include "stellar/session_mq.h"
 #include "md5.h"
 #include <stdint.h>
 #include <stdlib.h>
@@ -47,3 +56,10 @@
 #define GTEST_HTTP_TUPLE4_NAME "__X_HTTP_TUPLE4"
 #define GTEST_HTTP_PAYLOAD_NAME "__X_HTTP_PAYLOAD"
 #define GTEST_HTTP_PAYLOAD_MD5_NAME "__X_HTTP_PAYLOAD_MD5"
+
+struct stellar *stellar_init(void);
+void stellar_destroy(struct stellar *st);
+int stellar_load_plugin(struct stellar *st, void *(plugin_init_cb)(struct stellar *st));
+struct session *stellar_session_new(struct stellar *st, int topic_id, const char *payload, size_t payload_len, u_int8_t dir);
+void stellar_session_active(struct stellar *st, struct session *sess, int topic_id, const char *payload, size_t payload_len, u_int8_t dir);
+void stellar_session_close(struct stellar *st, struct session *sess, int topic_id);

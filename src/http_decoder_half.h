@@ -52,7 +52,7 @@ void http_decoder_half_reinit(struct http_decoder_half *half,
                               struct http_decoder_result_queue *queue,
                               nmx_pool_t *mempool, struct session *sess);
 
-int http_decoder_half_parse(struct http_decoder_half *half, const char *data, size_t data_len);
+int http_decoder_half_parse(int proxy_enable, struct http_decoder_half *half, const char *data, size_t data_len);
 
 long long http_decoder_half_trans_count(struct http_decoder_half *half);
 
@@ -84,6 +84,7 @@ void http_decoder_half_data_dump(struct http_decoder_half *half);
 
 void http_decoder_get_host_feed_url(struct http_decoder_half *half);
 void http_decoder_get_url(struct http_decoder_half_data *hfdata, nmx_pool_t *mempool);
+int http_half_data_get_decode_url(struct http_decoder_half_data *res_data, hstring *url);
 void http_decoder_join_url(struct http_decoder_half_data *hfdata,
                            nmx_pool_t *mempool,
                            const struct http_header *host_hdr);

@@ -77,18 +77,20 @@ static void http_event_handler(enum http_event event, struct http_decoder_half_d
         *data = half_data;
         queue_idx = http_decoder_result_queue_req_index(queue); //get the index after inc
         /* llhttp always call on_message_begin() even if llhttp_execute() error!!! */
-        msg = http_message_new(HTTP_TRANSACTION_NEW, queue, queue_idx, HTTP_REQUEST);
+        msg = http_message_new(HTTP_TRANSACTION_START, queue, queue_idx, HTTP_REQUEST);
         session_mq_publish_message(ev_ctx->ref_session, exdata->pub_topic_id, msg);      
         http_decoder_stat_update(&httpd_env->hd_stat, thread_id, HTTPD_STAT_TRANSACTION_NEW, 1);  
         break;
     case HTTP_EVENT_REQ_LINE:
         msg = http_message_new(HTTP_MESSAGE_REQ_LINE, queue, queue_idx, HTTP_REQUEST);
         session_mq_publish_message(ev_ctx->ref_session, exdata->pub_topic_id, msg);
-        if(httpd_tunnel_identify(PACKET_DIRECTION_C2S, half_data)){
+        if(httpd_tunnel_identify(httpd_env, PACKET_DIRECTION_C2S, half_data)){
             exdata->tunnel_state = HTTP_TUN_C2S_HDR_START;
             http_decoder_stat_update(&httpd_env->hd_stat, thread_id, HTTPD_STAT_TUNNEL, 1); 
         }
-        http_decoder_get_url(half_data, mempool);
+        if(httpd_is_tunnel_session(exdata)){
+            http_decoder_get_url(half_data, mempool);
+        }
         break;
     case HTTP_EVENT_REQ_HDR:
         msg = http_message_new(HTTP_MESSAGE_REQ_HEADER, queue, queue_idx, HTTP_REQUEST);
@@ -116,7 +118,8 @@ static void http_event_handler(enum http_event event, struct http_decoder_half_d
     }
     break;
     case HTTP_EVENT_REQ_BODY_BEGIN:
-        //do nothing, in BODY_DATA event
+        msg = http_message_new(HTTP_MESSAGE_REQ_BODY_START, queue, queue_idx, HTTP_REQUEST);
+        session_mq_publish_message(ev_ctx->ref_session, exdata->pub_topic_id, msg);
         break;
     case HTTP_EVENT_REQ_BODY_DATA:
         msg = http_message_new(HTTP_MESSAGE_REQ_BODY, queue, queue_idx, HTTP_REQUEST);
@@ -131,7 +134,7 @@ static void http_event_handler(enum http_event event, struct http_decoder_half_d
         session_is_symmetric(ev_ctx->ref_session, &flow_flag);
 
         if(SESSION_SEEN_C2S_FLOW == flow_flag){
-            msg = http_message_new(HTTP_TRANSACTION_FREE, queue, queue_idx, HTTP_REQUEST);
+            msg = http_message_new(HTTP_TRANSACTION_END, queue, queue_idx, HTTP_REQUEST);
             session_mq_publish_message(ev_ctx->ref_session, exdata->pub_topic_id, msg);
             http_decoder_stat_update(&httpd_env->hd_stat, thread_id, HTTPD_STAT_TRANSACTION_FREE, 1);
             http_decoder_stat_update(&httpd_env->hd_stat, thread_id, HTTPD_STAT_ASYMMETRY_TRANSACTION_C2S, 1);
@@ -182,7 +185,7 @@ static void http_event_handler(enum http_event event, struct http_decoder_half_d
         *data = half_data;
         if(0 == session_is_symmetric(ev_ctx->ref_session, &flow_flag)){
             if(SESSION_SEEN_S2C_FLOW == flow_flag){
-                msg = http_message_new(HTTP_TRANSACTION_NEW, queue, queue_idx, HTTP_RESPONSE);
+                msg = http_message_new(HTTP_TRANSACTION_START, queue, queue_idx, HTTP_RESPONSE);
                 session_mq_publish_message(ev_ctx->ref_session, exdata->pub_topic_id, msg);    
             }
         }
@@ -190,7 +193,7 @@ static void http_event_handler(enum http_event event, struct http_decoder_half_d
     case HTTP_EVENT_RES_LINE:
         msg = http_message_new(HTTP_MESSAGE_RES_LINE, queue, queue_idx, HTTP_RESPONSE);
         session_mq_publish_message(ev_ctx->ref_session, exdata->pub_topic_id, msg);
-        if(httpd_tunnel_identify(PACKET_DIRECTION_S2C, half_data)){
+        if(httpd_tunnel_identify(httpd_env,PACKET_DIRECTION_S2C, half_data)){
             exdata->tunnel_state = HTTP_TUN_S2C_START;
         }else{
             //connect response fail, reset tunnel_state
@@ -224,6 +227,8 @@ static void http_event_handler(enum http_event event, struct http_decoder_half_d
     }
         break;
     case HTTP_EVENT_RES_BODY_BEGIN:
+        msg = http_message_new(HTTP_MESSAGE_RES_BODY_START, queue, queue_idx, HTTP_RESPONSE);
+        session_mq_publish_message(ev_ctx->ref_session, exdata->pub_topic_id, msg);    
         break;
     case HTTP_EVENT_RES_BODY_DATA:
         msg = http_message_new(HTTP_MESSAGE_RES_BODY, queue, queue_idx, HTTP_RESPONSE);
@@ -234,7 +239,7 @@ static void http_event_handler(enum http_event event, struct http_decoder_half_d
         session_mq_publish_message(ev_ctx->ref_session, exdata->pub_topic_id, msg);    
         break;
     case HTTP_EVENT_RES_END:
-        msg = http_message_new(HTTP_TRANSACTION_FREE, queue, queue_idx, HTTP_RESPONSE);
+        msg = http_message_new(HTTP_TRANSACTION_END, queue, queue_idx, HTTP_RESPONSE);
         session_mq_publish_message(ev_ctx->ref_session, exdata->pub_topic_id, msg);
         http_decoder_stat_update(&httpd_env->hd_stat, thread_id, HTTPD_STAT_TRANSACTION_FREE, 1); 
         session_is_symmetric(ev_ctx->ref_session, &flow_flag);
@@ -347,11 +352,6 @@ static void _http_decoder_context_free(struct http_decoder_env *env)
     {
         return;
     }
-    if (env->hd_stat.fse != NULL)
-    {
-        fieldstat_easy_free(env->hd_stat.fse);
-        env->hd_stat.fse = NULL;
-    }
 
     http_decoder_stat_free(&env->hd_stat);
 
@@ -434,6 +434,16 @@ static int load_http_decoder_config(const char *cfg_path,
     else
     {
         hd_cfg->stat_output_interval = DEFAULT_STAT_OUTPUT_INTERVAL;
+    }
+
+    int_val = toml_int_in(basic_sec_tbl, "proxy_enable");
+    if (int_val.ok != 0)
+    {
+        hd_cfg->proxy_enable = int_val.u.i;
+    }
+    else
+    {
+        hd_cfg->proxy_enable = 0;
     }
 
     toml_free(root);
@@ -606,7 +616,7 @@ extern "C"
         }
 
         http_decoder_half_reinit(cur_half, exdata->queue, exdata->mempool, sess);
-        int ret = http_decoder_half_parse(cur_half, payload, payload_len);
+        int ret = http_decoder_half_parse(httpd_env->hd_cfg.proxy_enable, cur_half, payload, payload_len);
         if (ret < 0)
         {
             http_decoder_stat_update(&httpd_env->hd_stat, thread_id, HTTPD_STAT_PARSE_ERR, 1);
@@ -617,6 +627,10 @@ extern "C"
     void http_decoder_tunnel_msg_cb(struct session *sess, int topic_id, const void *tmsg, void *per_session_ctx, void *plugin_env)
     {
         struct http_decoder_env *httpd_env = (struct http_decoder_env *)plugin_env;
+        if(0 == httpd_env->hd_cfg.proxy_enable){
+            return;
+        }
+
         struct http_decoder_exdata *exdata = (struct http_decoder_exdata *)session_exdata_get(sess, httpd_env->topic_exdata_compose[HTTPD_TOPIC_HTTP_TUNNEL_INDEX].exdata_id);
         enum http_tunnel_message_type tmsg_type = http_tunnel_message_type_get((const struct http_tunnel_message *)tmsg);
         switch (tmsg_type)
@@ -796,14 +810,6 @@ static const struct http_topic_exdata_compose g_topic_exdata_compose[HTTPD_TOPIC
             goto failed;
         }
         
-        // printf("http decoder init succ, plugin id:%d \n", httpd_env->plugin_id);
-        // for(int i = 0; i < HTTPD_TOPIC_INDEX_MAX; i++){
-        //     printf("\ttopic_name:%s, topic_id:%d, ex_data_name:%s, exdata_id:%d\n", 
-        //             httpd_env->topic_exdata_compose[i].topic_name, 
-        //             httpd_env->topic_exdata_compose[i].sub_topic_id, 
-        //             httpd_env->topic_exdata_compose[i].exdata_name,
-        //             httpd_env->topic_exdata_compose[i].exdata_id);
-        // }
         return httpd_env;
 
     failed:
@@ -831,7 +837,7 @@ static const struct http_topic_exdata_compose g_topic_exdata_compose[HTTPD_TOPIC
         return msg->type;
     }
 
-    void http_message_get_request_line(const struct http_message *msg,
+    void http_message_request_line_get0(const struct http_message *msg,
                                       struct http_request_line *line)
     {
         if (unlikely(NULL == msg || msg->type != HTTP_MESSAGE_REQ_LINE))
@@ -852,7 +858,7 @@ static const struct http_topic_exdata_compose g_topic_exdata_compose[HTTPD_TOPIC
         http_decoder_half_data_get_request_line(req_data, line);
     }
 
-    void http_message_get_response_line(const struct http_message *msg,
+    void http_message_response_line_get0(const struct http_message *msg,
                                        struct http_response_line *line)
     {
         if (unlikely(NULL == msg || msg->type != HTTP_MESSAGE_RES_LINE))
@@ -872,7 +878,7 @@ static const struct http_topic_exdata_compose g_topic_exdata_compose[HTTPD_TOPIC
         http_decoder_half_data_get_response_line(res_data, line);
     }
 
-    void http_message_get_header(const struct http_message *msg, const hstring *key,
+    void http_message_header_get0(const struct http_message *msg, const hstring *key,
                                 struct http_header *hdr_result)
     {
         int ret = -1;
@@ -954,7 +960,7 @@ static const struct http_topic_exdata_compose g_topic_exdata_compose[HTTPD_TOPIC
         return -1;
     }
 
-    void http_message_get_raw_body(const struct http_message *msg,
+    void http_message_raw_body_get0(const struct http_message *msg,
                                   hstring *body)
     {
         int ret = -1;
@@ -984,7 +990,7 @@ static const struct http_topic_exdata_compose g_topic_exdata_compose[HTTPD_TOPIC
         return;
     }
 
-    void http_message_get_decompress_body(const struct http_message *msg,
+    void http_message_decompress_body_get0(const struct http_message *msg,
                                          hstring *body)
     {
         int ret = -1;
@@ -1014,7 +1020,7 @@ static const struct http_topic_exdata_compose g_topic_exdata_compose[HTTPD_TOPIC
         return;    
     }
 
-    void http_message_get_url(const struct http_message *msg, hstring *url)
+    void http_message_raw_url_get0(const struct http_message *msg, hstring *url)
     {
         if (unlikely(NULL == msg))
         {
@@ -1041,6 +1047,35 @@ static const struct http_topic_exdata_compose g_topic_exdata_compose[HTTPD_TOPIC
             url->iov_len = 0;
         }
         return;    
+    }
+
+    void http_message_decoded_url_get0(const struct http_message *msg, struct iovec *url)
+    {
+        if (unlikely(NULL == msg))
+        {
+            if(url){
+                url->iov_base = NULL;
+                url->iov_len = 0;
+            }
+            return;
+        }
+        assert(msg->ref_queue);
+        assert(msg->queue_index < HD_RESULT_QUEUE_LEN);
+
+        struct http_decoder_half_data *req_data =
+            msg->ref_queue->array[msg->queue_index].req_data;
+
+        if(http_half_data_get_decode_url(req_data, url) < 0){
+            goto fail;
+        }
+        return;
+
+    fail:
+        if(url){
+            url->iov_base = NULL;
+            url->iov_len = 0;
+        }
+        return;   
     }
 
     int http_message_get_transaction_seq(const struct http_message *msg)

@@ -1,5 +1,6 @@
 #include <string.h>
 #include <assert.h>
+#include "http_decoder.h"
 #include "http_decoder_inc.h"
 
 char *safe_dup(const char *str, size_t len)
@@ -38,6 +39,9 @@ const char *http_message_type_to_string(enum http_message_type type)
     case HTTP_MESSAGE_REQ_HEADER_END:
         sname = "HTTP_MESSAGE_REQ_HEADER_END";
         break;
+    case HTTP_MESSAGE_REQ_BODY_START:
+        sname = "HTTP_MESSAGE_REQ_BODY_START";
+        break;  
     case HTTP_MESSAGE_REQ_BODY: 
         sname = "HTTP_MESSAGE_REQ_BODY";
         break;
@@ -53,17 +57,20 @@ const char *http_message_type_to_string(enum http_message_type type)
     case HTTP_MESSAGE_RES_HEADER_END:
         sname = "HTTP_MESSAGE_RES_HEADER_END";
         break;
+    case HTTP_MESSAGE_RES_BODY_START:
+        sname = "HTTP_MESSAGE_RES_BODY_START";
+        break;  
     case HTTP_MESSAGE_RES_BODY:
         sname = "HTTP_MESSAGE_RES_BODY";
         break;  
     case HTTP_MESSAGE_RES_BODY_END:
         sname = "HTTP_MESSAGE_RES_BODY_END";
         break;
-    case HTTP_TRANSACTION_NEW:
-        sname = "HTTP_TRANSACTION_NEW";
+    case HTTP_TRANSACTION_START:
+        sname = "HTTP_TRANSACTION_START";
         break;
-    case HTTP_TRANSACTION_FREE:
-        sname = "HTTP_TRANSACTION_FREE";
+    case HTTP_TRANSACTION_END:
+        sname = "HTTP_TRANSACTION_END";
         break;
 
     default:
@@ -81,6 +88,7 @@ int http_message_type_is_req(struct session *sess, enum http_message_type msg_ty
         case HTTP_MESSAGE_REQ_LINE:
         case HTTP_MESSAGE_REQ_HEADER:
         case HTTP_MESSAGE_REQ_HEADER_END:
+        case HTTP_MESSAGE_REQ_BODY_START:
         case HTTP_MESSAGE_REQ_BODY:
         case HTTP_MESSAGE_REQ_BODY_END:
             is_req_msg = 1;
@@ -89,13 +97,14 @@ int http_message_type_is_req(struct session *sess, enum http_message_type msg_ty
         case HTTP_MESSAGE_RES_LINE:
         case HTTP_MESSAGE_RES_HEADER:
         case HTTP_MESSAGE_RES_HEADER_END:
+        case HTTP_MESSAGE_RES_BODY_START:
         case HTTP_MESSAGE_RES_BODY:
         case HTTP_MESSAGE_RES_BODY_END:
             is_req_msg = 0;
         break;
 
-        case HTTP_TRANSACTION_NEW:
-        case HTTP_TRANSACTION_FREE:
+        case HTTP_TRANSACTION_START:
+        case HTTP_TRANSACTION_END:
         {
             int cur_dir = packet_get_direction(session_get0_current_packet(sess));
             if(PACKET_DIRECTION_C2S == cur_dir){
@@ -154,4 +163,58 @@ int stellar_session_mq_get_topic_id_reliable(struct stellar *st, const char *top
         topic_id = stellar_session_mq_create_topic(st, topic_name, msg_free_cb, msg_free_arg);
     }
     return topic_id;
+}
+
+static const unsigned char __g_httpd_hextable[] = {
+  0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 0, 0, 0, 0, 0,       /* 0x30 - 0x3f */
+  0, 10, 11, 12, 13, 14, 15, 0, 0, 0, 0, 0, 0, 0, 0, 0, /* 0x40 - 0x4f */
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,       /* 0x50 - 0x5f */
+  0, 10, 11, 12, 13, 14, 15                                      /* 0x60 - 0x66 */
+};
+
+/* the input is a single hex digit */
+#define onehex2dec(x) __g_httpd_hextable[x - '0']
+
+#include <ctype.h>
+// https://github.com/curl/curl/blob/2e930c333658725657b94a923d175c6622e0f41d/lib/urlapi.c
+void httpd_url_decode(const char *string, size_t length, char *ostring, size_t *olen)
+{
+    size_t alloc = length;
+    char *ns = ostring;
+
+    while (alloc)
+    {
+        unsigned char in = (unsigned char)*string;
+        if (('%' == in) && (alloc > 2) &&
+            isxdigit(string[1]) && isxdigit(string[2]))
+        {
+            /* this is two hexadecimal digits following a '%' */
+            in = (unsigned char)(onehex2dec(string[1]) << 4) | onehex2dec(string[2]);
+            string += 3;
+            alloc -= 3;
+        }
+        else
+        {
+            string++;
+            alloc--;
+        }
+        *ns++ = (char)in;
+    }
+    *ns = 0; /* terminate it */
+
+    if (olen)
+        /* store output size */
+        *olen = ns - ostring;
+
+    return;
+}
+
+int httpd_url_is_encoded(const char *url, size_t len)
+{
+    for(size_t i = 0; i < len; i++){
+        if(url[i] == '%'){
+            return 1;
+        }
+    }
+    return 0;
 }
